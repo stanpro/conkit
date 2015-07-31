@@ -24,7 +24,7 @@ class cms
 		if (isset($_SERVER['PHP_AUTH_USER']) && $_SERVER['PHP_AUTH_USER']."\n".$_SERVER['PHP_AUTH_PW']==core::req('.cms-failed')) unset($_SERVER['PHP_AUTH_USER']);
 		if (!isset($_SERVER['PHP_AUTH_USER']))
 		{
-			$realm= config::get('cms-realm');
+			$realm= core::config('cms-realm');
 			if (!$realm)
 			{
 				$realm= strtolower($_SERVER['HTTP_HOST']);
@@ -35,7 +35,7 @@ class cms
 		}
 		else
 		{
-			$loginHandler= config::get('cms-user-handler');
+			$loginHandler= core::config('cms-user-handler');
 			if (!$loginHandler) $loginHandler= 'cms::loginCheck';
 			if ($attr=call_user_func($loginHandler,$_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']))
 			{
@@ -54,7 +54,7 @@ class cms
 	//=============================================================================
 	function loginCheck($user,$pass)
 	{
-		$users= config::get('cms-users');
+		$users= core::config('cms-users');
 		if (!isset($users[$user])) return false;
 		if ($users[$user]['password']===$pass)
 		{

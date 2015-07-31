@@ -49,7 +49,7 @@ class cmsGui
 	{
 		core::reg('run-naked', true);
 		if ($file!='cms.css' && $file!='cms.js') core::halt(403);
-		if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && !config::get('run-devel'))
+		if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && !core::config('run-devel'))
 		{
     		header('HTTP/1.1 304 Not Modified');
  			header('Cache-Control: public, max-age=3600');
@@ -60,7 +60,7 @@ class cmsGui
 		{
 			if ($file=='cms.css')
 			{
-				if (config::get('run-devel') && filemtime(CORE.'cms.php.css')>filemtime(CORE.'cms.css'))
+				if (core::config('run-devel') && filemtime(CORE.'cms.php.css')>filemtime(CORE.'cms.css'))
 				{
 					self::generateCss('core','quiet');
 				}
@@ -86,7 +86,7 @@ class cmsGui
 		$buffer= ob_get_contents();
 		ob_end_clean();
 		if ($target=='core') $file= CORE.'cms.css';
-		else $file= config::set('cms-css');
+		else $file= core::config('cms-css');
 		if (file_put_contents($file,$buffer)) 
 		{
 			if ($mode=='quiet') return;

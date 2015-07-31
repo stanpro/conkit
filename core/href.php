@@ -6,9 +6,6 @@ class href
 	{
 		$args= href::processArgs(func_get_args());
 
-		// if system folder has direct HTTP access;
-		//? if ($args['template']=='(shared)' && $CONFIG['shared-http']) return $CONFIG['shared-http'].$args['req']['document'];
-
 		$hash='';
 		if (isset($args['request']['#']))
 		{
@@ -16,29 +13,21 @@ class href
 			unset($args['request']['#']);
 		}
 		$args= href::required($args);
-		if (isset(config::$items['rewrite-encode']) && (!isset(config::$items['no-cache']) || !in_array($args['template'],core::$config['no-cache'])))
+		if (core::config('rewrite-encode') && (!core::config('no-cache') || !in_array($args['template'],core::$config['no-cache'])))
 		{
-			$url= call_user_func(config::$items['rewrite-encode'],$args['module'],$args['request'],$hash);
+			$url= call_user_func(core::$config['rewrite-encode'],$args['module'],$args['request'],$hash);
 		}
 		else
 		{
-			if (isset(config::$items['index.php'])) $url= config::$items['index.php'];
+			if (isset(core::$config['index.php'])) $url= core::$config['index.php'];
 	    	else $url= '';
 	    	$pairs= array();
-	    	if ($args['module']!=config::$items['default-module']) $pairs[]= config::$items['module-var'].'='.$args['module'];
+	    	if ($args['module']!=core::$config['default-module']) $pairs[]= core::$config['module-var'].'='.$args['module'];
 			foreach ($args['request'] as $name=>$val) if(!is_null($val)) $pairs[]= $name.'='.urlencode($val);
 			if ($pairs) $url.= '?'.implode('&',$pairs);
 			if (!$url && !isset($args['current'])) $url= (isset($_SERVER['HTTPS '])?'https':'http').'://'.$_SERVER['HTTP_HOST'].substr($_SERVER['SCRIPT_NAME'],0,-9); // cut off "index.php"
 		}
-		/*?
-		if (isset($INPUT['(crawler)']))
-		{
-			if (isset($args['req']['(crawler)'])) unset($args['req']['(crawler)']);
-			$OUTPUT['phella']['(crawler)'][]=$args;
-		}
-		*/
 		$url= $url.$hash;
-		//? if ($CONFIG['href-html-spec']) $url= htmlspecialchars($url);
 		return $url;
 	}
 
@@ -48,14 +37,14 @@ class href
 		$current= core::$requestUrl;
 		$pairs= self::chain2pairs(func_get_args());
 		$pairs= array_merge($current,$pairs);
-		return self::url(core::module(),$pairs);
+		return self::url(core::moduleName(),$pairs);
 	}
 	
 	//=============================================================================
 	function processArgs($args)
 	{
 		if (is_array($args[0])) return $args[0]; // already processed
-		$args_processed= array('module'=>core::module(),'request'=>array());
+		$args_processed= array('module'=>core::moduleName(),'request'=>array());
 		if ($args[0])  $args_processed['module']= $args[0];
 		else $args_processed['current']= true;
 		if (count($args)>1)
@@ -77,7 +66,7 @@ class href
 				if ($args['request'][$name]==$data['ommit']) unset($args['request'][$name]);
 			}
 		}
-  		if (core::reg('ignore-required-vars') && config::$items['required-vars'])
+  		if (core::reg('ignore-required-vars') && core::$config['required-vars'])
 		{
     		foreach (core::$config['required-vars'] as $name=>$data)
 			{

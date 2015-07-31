@@ -1,11 +1,11 @@
 <?
-core::init();
+include(__DIR__.'/config.php');
 
 //=======================================================
 function __autoload($name) 
 {
 	if (in_array($name,array('href','debug','sql','cms','cmsGui','cmsContext'))) include(__DIR__.'/'.$name.'.php');
-	else core::library(config::get('class-sprefix').$name.config::get('class-suffix'));
+	else core::library(core::config('class-sprefix').$name.core::config('class-suffix'));
 }
 
 //=======================================================
@@ -19,18 +19,18 @@ class core
 	static $prepend= array();
 	
 	//====================================================
-	function init()
+	function start()
 	{
-		error_reporting(config::$items['error-reporting-lo']);
+		error_reporting(core::$config['error-reporting-lo']);
 
 		foreach ($_COOKIE as $var=>$val) core::$request[$var]= $val;
-		if (isset(config::$items['cookie-vars'])) foreach (config::$items['cookie-vars'] as $var=>$config)
+		if (isset(core::$config['cookie-vars'])) foreach (core::$config['cookie-vars'] as $var=>$config)
 		{
 			core::$request[$var]= core::filter(core::req($var),$config);
 		}
 
 		foreach ($_GET as $var=>$val) core::$request[$var]= core::$requestUrl[$var]= $val;
-		unset(core::$requestUrl[config::get('module-var')]);
+		unset(core::$requestUrl[core::config('module-var')]);
 		foreach ($_POST as $var=>$val) core::$request[$var]= $val;
 		foreach ($_FILES as $var=>$val)
 		{
@@ -50,7 +50,7 @@ class core
 			}
 		}
 
-		if (isset(config::$items['cookie-vars'])) foreach (config::$items['cookie-vars'] as $name=>$config) 
+		if (isset(core::$config['cookie-vars'])) foreach (core::$config['cookie-vars'] as $name=>$config) 
 		{
 			if (isset(core::$request[$name]))
 			{
@@ -64,32 +64,32 @@ class core
 		}
 		
 		// apply required vars
-		if (isset(config::$items['required'])) foreach (config::$items['required'] as $name=>$config)
+		if (isset(core::$config['required'])) foreach (core::$config['required'] as $name=>$config)
 		{
 			core::$request[$name]=  core::filter(core::$request[$name],$comfig);
 			core::$requestUrl[$name]= core::$request[$name];
 		}
 		
-		if (!core::module())
+		if (!core::moduleName())
 		{
-			if (is_array(config::$items['default-module']))
+			if (is_array(core::$config['default-module']))
 			{
-				$args= href::processArgs(config::$items['default-module']);
-				core::$request[config::$items['module-var']]= $args['template'];
+				$args= href::processArgs(core::$config['default-module']);
+				core::$request[core::$config['module-var']]= $args['template'];
 				array_merge(core::$reques,$args['req']);
 			}
 		}
-		core::$request[config::$items['module-var']]= str_replace('..','(dot)(dot)',core::module()); //secure upper directories
-		core::$request[config::$items['module-var']]= str_replace("\0",'(0)',core::module()); //secure
-		core::$request[config::$items['module-var']]= str_replace('<','(lt)',core::module()); //secure
-		core::$request[config::$items['module-var']]= str_replace('>','(gt)',core::module()); //secure
+		core::$request[core::$config['module-var']]= str_replace('..','(dot)(dot)',core::moduleName()); //secure upper directories
+		core::$request[core::$config['module-var']]= str_replace("\0",'(0)',core::moduleName()); //secure
+		core::$request[core::$config['module-var']]= str_replace('<','(lt)',core::moduleName()); //secure
+		core::$request[core::$config['module-var']]= str_replace('>','(gt)',core::moduleName()); //secure
 
 		// set session var
-		if (core::req(session_name()) || isset(config::$items['session-vars']))
+		if (core::req(session_name()) || isset(core::$config['session-vars']))
 		{
 			if (!session_id()) session_start();
 			foreach ($_SESSION as $name=>$val) core::$request[$name]= $val;
-			if (isset(config::$items['session-vars'])) foreach (config::$items['session-vars'] as $name=>$config)
+			if (isset(core::$config['session-vars'])) foreach (core::$config['session-vars'] as $name=>$config)
 			{
 				core::$request[$name]= core::filter(core::req($name),$config);
 				unset(core::$requestUrl[$name]);
@@ -101,8 +101,8 @@ class core
 		if (core::req('core-module')=='cms-resource') cmsGui::forward(core::req('file'));
 
 		ob_start();
-		if (config::$items['pre-models']) foreach(config::$items['pre-models'] as $model) core::insertModel($model);
-		core::insert(core::module());
+		if (core::$config['pre-models']) foreach(core::$config['pre-models'] as $model) core::insertModel($model);
+		core::insert(core::moduleName());
 		$buffer= ob_get_contents();
 		ob_end_clean();
 
@@ -110,10 +110,10 @@ class core
 		if (!core::reg('run-naked'))
 		{
 			ob_start();
-			if (config::$items['pre-module']) core::insert(config::$items['pre-module']);
+			if (core::$config['pre-module']) core::insert(core::$config['pre-module']);
 			echo $buffer;
-			if (config::$items['post-module']) core::insert(config::$items['post-module']);
-			if (config::get('post-models')) foreach(config::$items['post-models'] as $model) core::insertModel($model);
+			if (core::$config['post-module']) core::insert(core::$config['post-module']);
+			if (core::config('post-models')) foreach(core::$config['post-models'] as $model) core::insertModel($model);
 			$buffer= ob_get_contents();
 			ob_end_clean();
 		}
@@ -124,11 +124,41 @@ class core
 	}	
 
 	//=============================================================================
+	function config($key,$value=null)
+	{
+		$stored= (isset(self::$config[$key]) ? self::$config[$key] : null);
+		if ($value) self::$config[$key]= $value;
+		return $stored;
+	}
+	
+	//=============================================================================
 	function req($key,$val=null)
 	{
 		if ($val!==null) core::$request[$key]= $val;
 		if (isset(core::$request[$key])) return core::$request[$key];
 		else return null;
+	}
+	
+	//=============================================================================
+	function reqSession($name,$value)
+	{
+		if (!session_id()) session_start();
+		$_SESSION[$name]= $value;
+		core::$request[$name]= $value;
+		return $value;
+	}
+	
+	//=============================================================================
+	function reqCookie($name,$value,$expire=null)
+	{
+		if ($expire)
+		{
+			if (preg_match('/^\d{4}-d{2}-d{2}/',$expire)) $expire= strtotime($expire);
+			elseif ($expire<1000000000) $expire+= time();
+		}
+		setcookie($name, $value, $expire);
+		core::$request[$name]= $value;
+		return $value;
 	}
 	
 	//=============================================================================
@@ -142,8 +172,8 @@ class core
 	//=============================================================================
 	function module()
 	{
-		if (isset(core::$request[config::$items['module-var']])) return core::$request[config::$items['module-var']];
-		return config::$items['default-module'];
+		if (isset(core::$request[core::$config['module-var']])) return core::$request[core::$config['module-var']];
+		return core::$config['default-module'];
 	}
 	
 	//=============================================================================
@@ -205,49 +235,48 @@ class core
 	function redirect()
 	{
 		$args= href::processArgs(func_get_args());
-		header('Location: '.href::url($args));
+		header('Location: '.core::url($args));
 		exit;
 	}
 
 	//=============================================================================
 	function insert($name)
 	{
-		$name= core::call_stack_push(func_get_args(),'module');
+		$name= core::callStackPush(func_get_args(),'module');
 
-		// define and call model file
-		$model= config::$items['model-prefix'].$name.config::$items['model-suffix'];
-		if (file_exists($model))
+		$file= core::config('model-prefix').$name.core::config('model-suffix');
+		if (file_exists($file))
 		{
-			include($model);
+			core::errorReportToggle('hi');
+			include($file);
+			core::errorReportToggle();
 		}
-
-		// define and call template file
-		$template= config::$items['template-prefix'].$name.config::$items['template-suffix'];
-		if ($result=file_exists($template))
+		$file= core::config('template-prefix').$name.core::config('template-suffix');
+		if ($result=file_exists($file))
 		{
-			include($template);
+			core::errorReportToggle('hi');
+			include($file);
+			core::errorReportToggle();
 		}
-		else
-		{
-			core::halt(404,"Module not found '$template'");
-		}
- 		core::call_stack_pull();
+		else core::halt(404,"Template not found '$file'");
+ 		core::callStackPop();
 		return $result;
 	}
 
 	//=============================================================================
-	function insertModel()
+	function model()
 	{
-		$model= core::call_stack_push(func_get_args(),'model');
-  		$model_file= config::$items['model-prefix'].$model.config::$items['model-suffix'];
-		if (file_exists($model_file))
+		$name= core::callStackPush(func_get_args(),'model');
+  		$file= core::config('model-prefix').$name.core::config('model-suffix');
+		if (file_exists($file))
 		{
-			error_reporting(config::$items['error-reporting-hi']);
-			include($model_file);
-			error_reporting(config::$items['error-reporting-lo']);
+			core::errorReportToggle('hi');
+			$res= include($file);
+			core::errorReportToggle();
 		}
-		else core::error("Model not found '$model_file'");
-		core::call_stack_pull();
+		else core::error("Model not found '$file'");
+		core::callStackPop();
+		return $res;
 	}
 
 	//=============================================================================
@@ -256,7 +285,23 @@ class core
 		static $used= array();
 		if (isset($used[$model])) return;
 		$used[$model]= true;
-		core::insertModel($model);
+		return core::model($model);
+	}
+
+	//=============================================================================
+	function errorReportToggle($new=null)
+	{
+		static $stack= array();
+		if ($new)
+		{
+			error_reporting(core::$config['error-reporting-'.$new]);
+			array_push($stack,core::$config['error-reporting-'.$new]); 
+		}
+		else
+		{
+			$new= array_pop($stack);  
+			error_reporting($new);
+		}
 	}
 
 	//=============================================================================
@@ -271,7 +316,7 @@ class core
 	}
 
 	//=============================================================================
-	function call_stack_push($args,$type)
+	function callStackPush($args,$type)
 	{
 		$modulename= reset($args);
 		core::$callStack[]=array('name'=>$modulename,'args'=>array());
@@ -279,52 +324,18 @@ class core
 		$ptr= key(core::$callStack);
 		unset($args[key($args)]);
 		foreach ($args as $val) core::$callStack[$ptr]['args'][]=$val;
-		core::$callStack[]=array('type'=>$type,'name'=>$modulename,'status'=>'open');
+		core::$callStack[]=array('type'=>$type,'name'=>$modulename);
 		return $modulename;
 	}
 
 	//=============================================================================
-	function call_stack_pull()
+	function callStackPop()
 	{
 		end(core::$callStack);
 		unset(core::$callStack[key(core::$callStack)]);
 		end(core::$callStack);
 		$ptr= key(core::$callStack);
 		core::$callStack[$ptr]['status']= 'close';
-	}
-
-	//=============================================================================
-	function call_stack_this($key=null,$val=null)
-	{
-		end(core::$callStack);
-		$ptr= key(core::$callStack);
-		if ($key===null) return core::$callStack[$ptr];
-		if ($val===null) return core::$callStack[$ptr][$key];
-		core::$callStack[$ptr][$key]=$val;
-	}
-
-	//=============================================================================
-	function flatten_array($array)
-	{
-		$flat= array();
-		foreach($array as $key=>$val)
-		{
-			if (is_array($val)) $flat= array_merge($flat,core::flatten_array_branch($key,$val));
-			else $flat[$key]=$val;
-		}
-		return $flat;
-	}
-
-	//=============================================================================
-	function flatten_array_branch($prefix,$array)
-	{
-		$flat= array();
-		foreach($array as $key=>$val)
-		{
-			if (is_array($val)) $flat= array_merge($flat,core::flatten_array_branch($prefix.'['.$key.']',$val));
-			else $flat[$prefix.'['.$key.']']=$val;
-		}
-		return $flat;
 	}
 
 	//=============================================================================
@@ -342,12 +353,12 @@ class core
 		elseif ($type==='keywords') $value= '<meta name="keywords" content="'.$value.'" />';
 		elseif ($type==='charset') $value= '<meta http-equiv=Content-Type content="text/html; charset='.$value.'" />';
 		elseif ($type==='favicon') $value= '<link rel="shortcut icon" href="'.$value.'" />';
-		elseif ($type=='jquery') $value= '<script type="text/javascript" src="'.config::get('jquery').'"></script>';
+		elseif ($type=='jquery') $value= '<script type="text/javascript" src="'.core::config('jquery').'"></script>';
 		elseif ($type==='cms')
 		{
 			core::prepend('head','jquery');
-			core::prepend('head','css',config::get('cms-css'));
-			core::prepend('head','js',config::get('cms-js'));
+			core::prepend('head','css',core::config('cms-css'));
+			core::prepend('head','js',core::config('cms-js'));
 			core::prepend('head','css','https://fonts.googleapis.com/icon?family=Material+Icons');
 			return;
 		}
@@ -420,10 +431,14 @@ class core
 	}
 
 	//=============================================================================
-	function sessionVar($name,$value)
+	function url()
 	{
-		if (!session_id()) session_start();
-		$_SESSION[$name]= $value;
-		core::$request[$name]= $value;
+		return call_user_func_array('href::url',func_get_args());
+	}
+	
+	//=============================================================================
+	function urlAdd()
+	{
+		return call_user_func_array('href::urlAdd',func_get_args());
 	}
 }
