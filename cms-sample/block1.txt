@@ -1,0 +1,11 @@
+Quick Start
+Introduction to ConKit CMS design
+Firstly login as a content manager. Login link is on the top next to the logo.
+
+As soon as this CMS is not in to social content management link is not necessary be right to the eyes. It may be masked or hidden somehow. Say click on innocent image, right mouse click on something, etc. Just instruct staff of the company where and how to click.
+
+Login: admin
+Password: demo
+
+We have single login available in this test. But you may add as many as you wish and add attributes if necessary. Then separate access level or zones. But this already matter of the certain application, not the framework.
+

@@ -1,0 +1,6 @@
+Congratulations! 
+You are in admin mode
+You may notice that almost nothing changed in the web page view. Small difference is few red dots or beads around. They show what content elements or blocks you can manipulate. 
+Place mouse over a bead. Then veil box will appear and show which exactly block this bead corresponds to. Very top left bead (global) is always corresponds to the application in whole.
+Interface of back-end elements are red by default but may be tuned to any color. The idea that they outstand from your main website layout.
+Now click on a bead and see context menu with list of actions you may do for this content. That's basically all. Just try it out.

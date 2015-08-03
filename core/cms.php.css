@@ -9,6 +9,7 @@
 
 dfn.cms-anchor,
 div#cms-veil,
+div#cms-context,
 div#cms-popup input
 {
     animation : none;
@@ -87,7 +88,7 @@ div#cms-popup input
     empty-cells : show;
     float : none;
     font : normal;
-    font-family : inherit;
+	font-family : Arial,Helv,Helvetica;
     font-size : medium;
     font-style : normal;
     font-variant : normal;
@@ -208,22 +209,20 @@ div#cms-context a, div#cms-context span
 	color: <?=$fore?>;
 	text-decoration: none;
 	border-top: solid thin <?=$fore?>;
-	padding: 0 7px 0 0;
+	padding-right: 7px;
 	cursor: pointer;
 }
 div#cms-context i
 {
 	display: inline-block;
-	width: 24px;
-	height: 24px;
-	line-height: 24px;
+	width: 25px;
+	height: 25px;
+	line-height: 25px;
 	font-size: 18px;
 	text-align: center;
 	background-color: <?=$back2?>;
 	font-weight: normal;
 	margin-right: 7px;
-	vertical-align: middle;
-	margin-top: -1px; /* do not align properly */
 }
 div#cms-popup
 {
@@ -300,7 +299,7 @@ div#cms-popup form textarea
 {
 	height: auto;
 }
-div#cms-popup input[type="submit"]
+div#cms-popup form input[type="submit"]
 {
 	width: auto;
 	height: 23px;
@@ -338,4 +337,10 @@ div#cms-popup form h4
 	text-align: center; 
 	margin: 10px 0 0 0;
 }
+div#cms-popup hr{
+    border: 0;
+    height: 1px;
+    background-color: <?=$fore?>;
+}
+
 .material-icons.md-18 { font-size: 18px; }

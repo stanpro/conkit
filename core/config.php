@@ -5,6 +5,7 @@ core::config('template-prefix','');
 core::config('template-suffix','.tpl.php');
 core::config('model-prefix','');
 core::config('model-suffix','.mod.php');
+//core::config('log-file','../conkit.log');
 core::config('cms-realm','Phella 2 CMS Kit');
 core::config('cms-css','?core-module=cms-resource&file=cms.css');
 core::config('cms-js','?core-module=cms-resource&file=cms.js');

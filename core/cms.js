@@ -57,10 +57,6 @@ function cms_context_show(Anchor)
 	var Context= $('#cms-context');
 	if (Anchor.id=='cms-anchor-global') var Element= $('body');
 	else var Element= $(Anchor).next();
-	var Offset= Element.offset();
-	Context.css("top",Offset.top);
-	Context.css("left",Offset.left);
-	Context.css('z-index', $(Anchor).css('z-index')+1);
 	
 	var Title= $(Anchor).attr('title');
 	if (Title==undefined) Title= 'Control options:';
@@ -91,6 +87,11 @@ function cms_context_show(Anchor)
 		Html+= '</'+Tag+'>';
 		Context.append(Html);
 	}	
+	var Offset= Element.offset();
+	if (Offset.left+Context.width()>$(window).width()) Offset.left= $(window).width()-Context.width(); 
+	Context.css("top",Offset.top);
+	Context.css("left",Offset.left);
+	Context.css('z-index', $(Anchor).css('z-index')+1);
 	Context.show();
 	return false;
 }
@@ -102,6 +103,7 @@ function cms_context_hide()
 
 function cms_popup_show(Title,Content,Source)
 {
+	cms_popup_hide()
 	$('body').append(' \
 		<div id="cms-popup"> \
 			<i id="cms-popup-close" class="material-icons md-18" onclick="cms_popup_hide()">close</i> \

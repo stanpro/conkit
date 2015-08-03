@@ -10,8 +10,10 @@ class cms
 	{
 		if (core::req('cms-oper')=='logout')
 		{
-			unset($_SESSION['.cms']);
-			core::redirect(core::req('cms-request'));
+			unset($_SESSION['.cms-admin']);
+			unset($_SESSION['.cms-attr']);
+			if (isset($_SERVER['PHP_AUTH_USER'])) core::reqSession('.cms-expired',$_SERVER['PHP_AUTH_USER']."\n".$_SERVER['PHP_AUTH_PW']);
+			core::halt(301,urldecode(core::req('cms-request')));
 		}
 		elseif (core::req('cms-oper')=='login') cms::login();
 		elseif (core::req('cms-oper')=='reset') session_destroy();
@@ -21,7 +23,11 @@ class cms
 	function login()
 	{
 		core::reg('run-naked',true);
-		if (isset($_SERVER['PHP_AUTH_USER']) && $_SERVER['PHP_AUTH_USER']."\n".$_SERVER['PHP_AUTH_PW']==core::req('.cms-failed')) unset($_SERVER['PHP_AUTH_USER']);
+		if (isset($_SERVER['PHP_AUTH_USER']) && $_SERVER['PHP_AUTH_USER']."\n".$_SERVER['PHP_AUTH_PW']==core::req('.cms-expired'))
+		{
+			unset($_SERVER['PHP_AUTH_USER']);
+			core::reqSession('.cms-expired','');
+		}
 		if (!isset($_SERVER['PHP_AUTH_USER']))
 		{
 			$realm= core::config('cms-realm');
@@ -39,14 +45,14 @@ class cms
 			if (!$loginHandler) $loginHandler= 'cms::loginCheck';
 			if ($attr=call_user_func($loginHandler,$_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']))
 			{
-				core::sessionVar('.cms-admin',$_SERVER['PHP_AUTH_USER']);
-				core::sessionVar('.cms-attr',$attr);
-				core::sessionVar('.cms-failed',false);
+				core::reqSession('.cms-admin',$_SERVER['PHP_AUTH_USER']);
+				core::reqSession('.cms-attr',$attr);
+				core::reqSession('.cms-expired','');
 				if (!headers_sent()) core::halt(301,urldecode(core::req('cms-request')));
 				//debug::dump(core::$request);
 				//debug::dump($_SESSION);
 			}
-			core::sessionVar('.cms-failed',$_SERVER['PHP_AUTH_USER']."\n".$_SERVER['PHP_AUTH_PW']);
+			core::reqSession('.cms-expired',$_SERVER['PHP_AUTH_USER']."\n".$_SERVER['PHP_AUTH_PW']);
 			core::halt(403,'Wrong username/password. Press "Back".');
 		}
 	}
@@ -100,5 +106,25 @@ class cms
 		elseif ($arg) return core::req('.cms-'.$arg);
 		else return core::req('.cms-admin');
 	}
+	
+	//=====================================================
+	function form()
+	{
+		return cmsGui::create('cmsGuiForm');
+	}
+	
+	//=====================================================
+	function context()
+	{
+		if (!core::req('.cms-admin')) return new cmsDummy();
+		return cmsGui::create('cmsContext');
+	}
+}
 
+class cmsDummy extends stdClass
+{
+	function __call($name,$value)
+	{
+		return $this; 
+	}
 }

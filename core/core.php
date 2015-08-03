@@ -4,7 +4,7 @@ include(__DIR__.'/config.php');
 //=======================================================
 function __autoload($name) 
 {
-	if (in_array($name,array('href','debug','sql','cms','cmsGui','cmsContext'))) include(__DIR__.'/'.$name.'.php');
+	if (in_array($name,array('href','debug','sql','cms','cmsGui','cmsContext'),true)) include(__DIR__.'/'.$name.'.php');
 	else core::library(core::config('class-sprefix').$name.core::config('class-suffix'));
 }
 
@@ -19,7 +19,7 @@ class core
 	static $prepend= array();
 	
 	//====================================================
-	function start()
+	function start() /// Launches whole the action after configuration read
 	{
 		error_reporting(core::$config['error-reporting-lo']);
 
@@ -97,11 +97,11 @@ class core
 		}
 
 		if (core::req('cms-oper')) cms::perform();
-		if (core::req('core-module')=='cms-css') cmsGui::generateCss(core::req('target'));
-		if (core::req('core-module')=='cms-resource') cmsGui::forward(core::req('file'));
+		elseif (core::req('core-module')=='cms-resource') cmsGui::forward(core::req('file'));
+		elseif (core::req('core-module')=='cms-css') cmsGui::generateCss(core::req('target'));
 
 		ob_start();
-		if (core::$config['pre-models']) foreach(core::$config['pre-models'] as $model) core::insertModel($model);
+		if (isset(core::$config['pre-models'])) foreach(core::$config['pre-models'] as $model) core::model($model);
 		core::insert(core::moduleName());
 		$buffer= ob_get_contents();
 		ob_end_clean();
@@ -110,17 +110,17 @@ class core
 		if (!core::reg('run-naked'))
 		{
 			ob_start();
-			if (core::$config['pre-module']) core::insert(core::$config['pre-module']);
+			if (isset(core::$config['pre-module'])) core::insert(core::$config['pre-module']);
 			echo $buffer;
-			if (core::$config['post-module']) core::insert(core::$config['post-module']);
-			if (core::config('post-models')) foreach(core::$config['post-models'] as $model) core::insertModel($model);
+			if (isset(core::$config['post-module'])) core::insert(core::$config['post-module']);
+			if (isset(core::$config['post-models'])) foreach(core::$config['post-models'] as $model) core::model($model);
 			$buffer= ob_get_contents();
 			ob_end_clean();
 		}
 		
 		// Output
 		echo $buffer;
-		if (core::$prepend) core::error('one or more prepends were not utilized: '.implode(',',array_keys(core::$prepend)));
+		//if (core::$prepend) core::error('one or more prepends were not utilized: '.implode(',',array_keys(core::$prepend)));
 	}	
 
 	//=============================================================================
@@ -132,10 +132,12 @@ class core
 	}
 	
 	//=============================================================================
-	function req($key,$val=null)
+	function req($name,$value=null,$store=null,$expire=null)
 	{
-		if ($val!==null) core::$request[$key]= $val;
-		if (isset(core::$request[$key])) return core::$request[$key];
+		if ($store=='session') return self::reqSession($name,$value);
+		if ($store=='cookie') return self::reqCookie($name,$value,$expire);
+		if ($value!==null) core::$request[$name]= $value;
+		if (isset(core::$request[$name])) return core::$request[$name];
 		else return null;
 	}
 	
@@ -170,7 +172,7 @@ class core
 	}
 	
 	//=============================================================================
-	function module()
+	function moduleName()
 	{
 		if (isset(core::$request[core::$config['module-var']])) return core::$request[core::$config['module-var']];
 		return core::$config['default-module'];
@@ -248,9 +250,12 @@ class core
 		if (file_exists($file))
 		{
 			core::errorReportToggle('hi');
-			include($file);
+			$result= include($file);
 			core::errorReportToggle();
+			if ($result===true) return true;
+			if (is_string($result)) { echo $result; return true; }
 		}
+		
 		$file= core::config('template-prefix').$name.core::config('template-suffix');
 		if ($result=file_exists($file))
 		{
@@ -343,6 +348,7 @@ class core
 	{
 		if ($type=='(output)')
 		{
+			if (core::req('.cms-admin')) core::prepend('head','cms');
 			$html= "\n";
 			if (isset(core::$prepend[$target])) foreach (core::$prepend[$target] as $value) $html.= $value."\n";
 			unset(core::$prepend[$target]);
@@ -354,6 +360,7 @@ class core
 		elseif ($type==='charset') $value= '<meta http-equiv=Content-Type content="text/html; charset='.$value.'" />';
 		elseif ($type==='favicon') $value= '<link rel="shortcut icon" href="'.$value.'" />';
 		elseif ($type=='jquery') $value= '<script type="text/javascript" src="'.core::config('jquery').'"></script>';
+		elseif ($type=='alert') $value= '<script type="text/javascript">Alert("'.addslashes($value).'")</script>';
 		elseif ($type==='cms')
 		{
 			core::prepend('head','jquery');
@@ -440,5 +447,11 @@ class core
 	function urlAdd()
 	{
 		return call_user_func_array('href::urlAdd',func_get_args());
+	}
+
+	//=====================================================
+	function cms()
+	{
+		return isset(core::$request['.cms-admin']);
 	}
 }

@@ -3,6 +3,12 @@
 class cmsGui
 {
 	//=============================================================================
+	function create($class)
+	{
+		return new $class;
+	}
+
+	//=============================================================================
 	function counter($inc=0)
 	{
 		static $n=1; $n+=$inc;
@@ -96,6 +102,52 @@ class cmsGui
 	}
 }
 
+
+
+############################################
+class cmsContext
+{
+	var $context= array();
+	var $current;
+	var $title;
+
+	//==========================================
+	function __construct($title=null) 
+	{
+		$this->title= $title;
+	}
+
+	//=====================================================
+	function label($value)
+	{
+		if (!cms::admin()) return $this;
+		$this->context[]= array();
+		end($this->context);
+		$this->current= key($this->context);
+		$this->context[$this->current]['title']= $value;
+		return $this;
+	}
+	
+	//==========================================
+	function popup($url,$title=null) 
+	{
+		if (!cms::admin()) return $this;
+		$this->context[$this->current]['popup']= $url;
+		if ($title) $this->context[$this->current]['popuptitle']= $title;
+		return $this;
+	}
+
+	//==========================================
+	function __call($name,$value) 
+	{
+		if (!cms::admin()) return $this;
+		if (count($value)==1) $value= $value[0];
+		$this->context[$this->current][$name]= $value;
+		return $this;
+	}
+}
+
+
 ############################################
 class cmsGuiForm
 {
@@ -128,7 +180,7 @@ class cmsGuiForm
 	{
 		if (count($value)==1) $value= $value[0];
 		if (array_key_exists($name, $this->specOverall)) $this->specOverall[$name]= $value;
-		elseif (strpos('-|input|password|select|hidden|radios|checkbox|textarea|',"|$name|")) $this->newItem($name,$value);
+		elseif (strpos('-|input|password|select|hidden|radios|checkbox|textarea|text|',"|$name|")) $this->newItem($name,$value);
 		else $this->spec[$this->current][$name]= $value;
 		return $this;
 	}
@@ -169,13 +221,6 @@ class cmsGuiForm
 		return $this->newItem('file',$name);
 	}
 	//==========================================
-	function text($name=null) 
-	{
-		$this->newItem('static');
-		if ($name) $this->name($name);
-		return $this;
-	}
-	//==========================================
 	function separator($value=null) 
 	{
 		$this->newItem('separator');
@@ -198,19 +243,24 @@ class cmsGuiForm
 		$names= array(); 
 		foreach ($this->spec as $this->current=>$item)
 		{
+			$uid++;
 			$row= $this->type!='hidden' && $this->type!='collapse';
 			$html.= "\n";
-			if ($this->name && $this->type!='static' && !$this->omit) $names[]= $this->name;
+			if ($this->name && $this->type!='text' && !$this->omit) $names[]= $this->name;
 			if ($row)
 			{
 				$html.= "\n";
-				if ($this->type=='static' && $this->class) $addClass= ' '.$this->class;
+				if ($this->type=='text' && $this->class) $addClass= ' '.$this->class;
 				else $addClass= '';
 				if ($this->type=='separator') $html.= '<hr>';
 				else $html.= '<div class="'.$addClass.'">';
-				$html.= '<label>'.$this->label.'</label>';
+				if ($this->preview)
+				{
+					$html.= '<label>'.$this->label.'<i class="material-icons md-24" id="cms-form-peview-'.$uid.'">'.$this->preview.'</i></label>';
+				}
+				else $html.= '<label>'.$this->label.'</label>';
 			}
-			if ($this->type=='static') 
+			if ($this->type=='text') 
 			{
 				if (!isset($this->value)) $this->value= $this->currentValue();
 				$html.= $this->value;
@@ -259,9 +309,17 @@ class cmsGuiForm
 				$html.= $this->value;
 			}
 			elseif ($this->type=='collapse') {}
+			elseif ($this->type=='file')
+			{
+				$html.= '<input type="'.$this->type.'" '.$this->add;
+				$html.= ' name="'.$this->name.'"'.$this->html;;
+				if ($this->preview) $html.= ' onChange="cms_file_preview(this,\'cms-form-peview-'.$uid.'\')"';
+				if ($this->class) $html.= ' class="'.$this->class.'"';
+				$html.= '>';
+			}
 			else 
 			{
-				$html.= '<input type="'.$this->type.'" id="'.$this->name.'"'.$this->add;
+				$html.= '<input type="'.$this->type.'" '.$this->add;
 				$html.= ' name="'.$this->name.'" value="'.$this->currentValue(true).'" '.$this->html;
 				if ($this->class) $html.= ' class="'.$this->class.'"';
 				$html.= '>';

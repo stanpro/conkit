@@ -4,6 +4,7 @@ class debug
 	//=============================================================================
 	function log()
 	{
+		if (!core::config('log-file')) return;
 		$args= func_get_args();
 		$line= $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 		foreach ($args as $arg)
@@ -11,9 +12,7 @@ class debug
 			if (is_array($arg)) $arg=jason_encode($arg);
 			$line.= '; '.$arg;
   		}
-		$fp= fopen('phella_log.txt','a');
-  		fwrite($fp,$line."\n");
-		fclose($fp);
+		file_put_contents(core::config('log-file'),$line."\n",FILE_APPEND);
 	}
 	
 	//=============================================================================
@@ -30,10 +29,10 @@ class debug
 		if ($level==-1)
 		{
 			$trans[' ']='&blank;';
-			$trans["\t"]='&rArr;';
-			$trans["\n"]='&para;';
-			$trans["\r"]='&lArr;';
-			$trans["\0"]='&oplus;';
+			$trans["\t"]='&map;';
+			$trans["\n"]='&crarr;';
+			$trans["\r"]='&larrb;';
+			$trans["\0"]='&empty;';
 			return strtr(htmlspecialchars($value),$trans);
 		}
 		if ($level==0)
@@ -51,7 +50,7 @@ class debug
 		elseif ($type=='boolean') $value= ($value?'true':'false');
 		elseif ($type=='object')
 		{
-			$props= get_class_vars(get_class($value));
+			$props= get_object_vars($value);
 			echo '('.count($props).') <u>'.get_class($value).'</u>';
 			$o= array_search($value,$objects,true);
 			if ($o===false)
