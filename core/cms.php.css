@@ -194,13 +194,18 @@ div#cms-context
 	color: <?=$fore?>;
 	box-shadow: 0 0 20px <?=$fore?>;
 }
-div#cms-context div.cms-context-title
+div#cms-context h9
 {
+	display: block;
+	font-size: 14px;
+	font-weight: bold;
+	font-style: normal;
+	margin: 0;
 	text-align: center;
 	background-color: <?=$back2?>;
 	padding: 3px 7px;
 }	
-div#cms-context a, div#cms-context span
+div#cms-context a, div#cms-context div
 {
 	display: block;
 	height: 25px;
@@ -208,13 +213,14 @@ div#cms-context a, div#cms-context span
 	line-height: 25px;
 	color: <?=$fore?>;
 	text-decoration: none;
-	border-top: solid thin <?=$fore?>;
+	border-top: solid 1px <?=$fore?>;
 	padding-right: 7px;
 	cursor: pointer;
 }
 div#cms-context i
 {
-	display: inline-block;
+	display: block;
+	position: absolute;
 	width: 25px;
 	height: 25px;
 	line-height: 25px;
@@ -222,7 +228,22 @@ div#cms-context i
 	text-align: center;
 	background-color: <?=$back2?>;
 	font-weight: normal;
-	margin-right: 7px;
+}
+div#cms-context svg
+{
+	width: 17px;
+	height: 17px;
+	padding: 4px;
+	background-color: <?=$back2?>;
+	vertical-align: middle;
+}
+div#cms-context span
+{
+	display: inline-block;
+	height: 25px;
+	line-height: 25px;
+	padding: 0 7px 0 32px;
+	vertical-align: middle;
 }
 div#cms-popup
 {

@@ -2,7 +2,7 @@
 
 <?
 	$c= cms::context() -> label('Edit') -> icon('edit') -> popup(core::url('edit-block','no',1));
-	echo cms::anchor($c);
+	echo cms::anchor($c,'Block 1');
 ?>
 <div>
 	<h1><?=core::reg('headline1')?></h1>
@@ -26,7 +26,7 @@
 <? if(cms::admin()): ?>
 	<?
 		$c= cms::context() -> label('Edit') -> icon('edit') -> popup(core::url('edit-block','no',2));
-		echo cms::anchor($c);
+		echo cms::anchor($c,'Block 2');
 	?>
 	<div>
 			<h1><?=core::reg('headline2')?></h1>

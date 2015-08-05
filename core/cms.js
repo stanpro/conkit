@@ -9,14 +9,14 @@ $(window).ready(function()
 		$(this).css("left",Offset.left);
 	});
 
-	$('.cms-anchor').hover(function() 
+	$('dfn.cms-anchor').hover(function() 
 	{
-  		cms_veil_show(this);
+		cms_veil_show(this);
 	});
 
-	$('.cms-anchor').click(function() 
+	$('dfn.cms-anchor').click(function(event) 
 	{
-  		cms_context_show(this);
+ 		cms_context_show(this);
 	});
 });
 
@@ -60,16 +60,16 @@ function cms_context_show(Anchor)
 	
 	var Title= $(Anchor).attr('title');
 	if (Title==undefined) Title= 'Control options:';
-	Context.append('<div class="cms-context-title">'+Title+'</div>');
+	Context.append('<h9>'+Title+'</h9>');
 
-	var Data= $('#'+Anchor.id+' code').text();
+	var Data= $(Anchor).children().text();
 	Data= JSON.parse(Data);
 	for (i in Data) 
 	{
 		var Html= '';
 		if (Data[i].url==undefined)
 		{
-			var Tag= 'span';
+			var Tag= 'div';
 			var Title= (Data[i].popuptitle==undefined ? Data[i].title : Data[i].popuptitle);
 			var Attr= ' onclick="return cms_popup_show(\''+Title+'\',false,\''+Data[i].popup+'\')"';
 		}
@@ -83,7 +83,8 @@ function cms_context_show(Anchor)
 		if (Data[i].icon[0]<'a' && Data[i].icon[0]<'z') var Class= '';
 		else var Class= ' class="material-icons md-18"';
 		Html+= '<i'+Class+'>'+Data[i].icon+'</i>';
-		Html+= Data[i].title;
+		//Html+= '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="64" height="64" viewBox="0 0 64 64"><path d="M0 64h32v-64h-32v64zM20 8h8v8h-8v-8zM20 24h8v8h-8v-8zM20 40h8v8h-8v-8zM4 8h8v8h-8v-8zM4 24h8v8h-8v-8zM4 40h8v8h-8v-8zM36 20h28v4h-28zM36 64h8v-16h12v16h8v-36h-28z" fill="white"></path></svg>';
+		Html+= '<span>'+Data[i].title+'</span>';
 		Html+= '</'+Tag+'>';
 		Context.append(Html);
 	}	
