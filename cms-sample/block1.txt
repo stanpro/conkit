@@ -7,5 +7,5 @@ As soon as this CMS is not in to social content management link is not necessary
 Login: admin
 Password: demo
 
-We have single login available in this test. But you may add as many as you wish and add attributes if necessary. Then separate access level or zones. But this already matter of the certain application, not the framework.
+We have single login available in this test. But you may add as many as you wish and add attributes if necessary. Then separate access level or zones. But this already matter of the certain application not the framework.
 

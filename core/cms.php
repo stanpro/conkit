@@ -108,9 +108,9 @@ class cms
 	}
 	
 	//=====================================================
-	function form()
+	function form($data=null)
 	{
-		return cmsGui::create('cmsGuiForm');
+		return cmsGui::create('cmsGuiForm',$data);
 	}
 	
 	//=====================================================

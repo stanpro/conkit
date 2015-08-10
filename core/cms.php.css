@@ -286,26 +286,26 @@ div#cms-popup div#cms-popup-content
 {
 	margin: 10px;
 }
-div#cms-popup form div
+div#cms-popup form#cms-form div
 {
 	margin: 3px 10px 0 10px;
 	text-align: right;
 	white-space: nowrap;
 }
-div#cms-popup form label
+div#cms-popup form#cms-form label
 {
 	line-height: 25px;
 	text-align: right;
 	margin-right: 10px;
 	vertical-align: top;
 }
-div#cms-popup fieldset label
+div#cms-popup form#cms-form fieldset label
 {
 	text-align: left;
 	vertical-align: middle;
 	cursor: default;
 }
-div#cms-popup form input, div#cms-popup select, div#cms-popup textarea 
+div#cms-popup form#cms-form input, div#cms-popup select, div#cms-popup textarea 
 {
 	width: 300px;
 	height: 23px;
@@ -316,21 +316,23 @@ div#cms-popup form input, div#cms-popup select, div#cms-popup textarea
 	padding: 0 3px;
 	box-sizing: border-box;
 }
-div#cms-popup form textarea 
+div#cms-popup form#cms-form textarea 
 {
 	height: auto;
 }
-div#cms-popup form input[type="submit"]
+div#cms-popup form#cms-form input[type="submit"], div#cms-popup .cms-button
 {
 	width: auto;
 	height: 23px;
-	padding: 0 15px;
+	line-height: 23px;
+	padding: 3px 15px;
 	border: solid thin <?=$fore?>;
 	color: <?=$fore?>;
 	background-color: <?=$back2?>;
 	cursor: pointer;
+	text-decoration: none;
 }
-div#cms-popup form input[type="radio"], div#cms-popup form input[type="checkbox"]
+div#cms-popup form#cms-form input[type="radio"], div#cms-popup form input[type="checkbox"]
 {
 	display: inline-block;
 	width: 15px;
@@ -339,12 +341,12 @@ div#cms-popup form input[type="radio"], div#cms-popup form input[type="checkbox"
 	border: 0;
 	vertical-align: middle;	
 }
-div#cms-popup form select option 
+div#cms-popup form#cms-form select option 
 {
 	color: <?=$fore?>;
 	background-color: <?=$back2?>;
 }
-div#cms-popup form fieldset 
+div#cms-popup form#cms-form fieldset 
 {
 	width: 300px;
     display: inline-block;
@@ -353,12 +355,13 @@ div#cms-popup form fieldset
     border: none;
     text-align: left;
 }
-div#cms-popup form h4 
+div#cms-popup h4
 {
 	text-align: center; 
 	margin: 10px 0 0 0;
 }
-div#cms-popup hr{
+div#cms-popup hr
+{
     border: 0;
     height: 1px;
     background-color: <?=$fore?>;

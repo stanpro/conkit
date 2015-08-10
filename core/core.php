@@ -4,7 +4,7 @@ include(__DIR__.'/config.php');
 //=======================================================
 function __autoload($name) 
 {
-	if (in_array($name,array('href','debug','sql','cms','cmsGui','cmsContext'),true)) include(__DIR__.'/'.$name.'.php');
+	if (in_array($name,array('href','debug','sql','cms','cmsGui'),true)) include(__DIR__.'/'.$name.'.php');
 	else core::library(core::config('class-sprefix').$name.core::config('class-suffix'));
 }
 
@@ -124,16 +124,18 @@ class core
 	}	
 
 	//=============================================================================
-	function config($key,$value=null)
+	function config($name,$value=null)
 	{
-		$stored= (isset(self::$config[$key]) ? self::$config[$key] : null);
-		if ($value) self::$config[$key]= $value;
+		if (!$name) return core::$config;
+		$stored= (isset(self::$config[$name]) ? self::$config[$name] : null);
+		if ($value) self::$config[$name]= $value;
 		return $stored;
 	}
 	
 	//=============================================================================
-	function req($name,$value=null,$store=null,$expire=null)
+	function req($name=null,$value=null,$store=null,$expire=null)
 	{
+		if (!$name) return core::$request;
 		if ($store=='session') return self::reqSession($name,$value);
 		if ($store=='cookie') return self::reqCookie($name,$value,$expire);
 		if ($value!==null) core::$request[$name]= $value;
@@ -164,88 +166,18 @@ class core
 	}
 	
 	//=============================================================================
-	function reg($key,$val=null)
+	function reg($name=null,$value=null)
 	{
-		if ($val!==null) core::$registry[$key]= $val;
-		if (isset(core::$registry[$key])) return core::$registry[$key];
+		if (!$name) return core::$registry;
+		if ($value!==null) core::$registry[$name]= $value;
+		if (isset(core::$registry[$name])) return core::$registry[$name];
 		else return null;
 	}
 	
 	//=============================================================================
-	function moduleName()
-	{
-		if (isset(core::$request[core::$config['module-var']])) return core::$request[core::$config['module-var']];
-		return core::$config['default-module'];
-	}
-	
-	//=============================================================================
-	function filter($value,$rule)
-	{
-		if (!isset($rule['default'])) $rule['default']=null;
-		if (isset($rule['range'])) $value= core::filterRange($value,$rule['range'],$rule['default']);
-		elseif (isset($rule['valid'])) 
-		{
-			if (strpos($rule['valid'],'w')!==false) $value= preg_replace('/[^a-zA-Z0-9_-]/','',$value);
-			if (strpos($rule['valid'],'i')!==false) $value= (int)$value;
-			if (strpos($rule['valid'],'h')!==false) $value= htmlspecialchars($value);
-			if (strpos($rule['valid'],'u')!==false) $value= strtoupper($value);
-			if (strpos($rule['valid'],'l')!==false) $value= strtoupper($value);
-			if (strpos($rule['valid'],'t')!==false) $value= trim($value);
-			if (strpos($rule['valid'],'@')!==false) 
-			{
-				$value= trim($value);
-				$value= preg_replace('/[^a-zA-Z0-9@_.\-]/','',$value);
-				$value= strtolower($value);
-			}
-		}
-		elseif (isset($rule['handler']))
-		{
-			if (str_word_count($rule['handler'])==1) // function given
-			{
-				if (function_exists($rule['handler'])) $value= call_user_func($rule['handler'],$value);
-				else core::error("Handler function not exists: '{$rule['handler']}'");
-			}
-		}
-		elseif (isset($rule['default'])) $value= $rule['default'];
-		if (isset($rule['size'])) $value= substr($value,0,$rule['size']);
-		return $value;
-	}
-
-	//=============================================================================
-	function filterRange($value,$range,$default)
-	{
-		if (is_array($range))
-		{
-			if (in_array($value,$range)) return $value;
-			if ($default) return $default;
-			return reset($range);
-		}
-		$list= explode(',',$range);
-		foreach ($list as $sub)
-		{
-			$sub= explode('-',$sub,2);
-			if (count($sub)==1) $sub[1]=$sub[0];
-			if ($sub[0].$sub[1]=='' && $value=='-') return $value;
-			if ($sub[0]=='' && $value<=$sub[1]) return $value;
-			if ($sub[1]=='' && $sub[0]<=$value) return $value;
-			if ($sub[0]<=$value && $value<=$sub[1]) return $value;
-		}
-		return $default;
-	}
-
-	//=============================================================================
-	function redirect()
-	{
-		$args= href::processArgs(func_get_args());
-		header('Location: '.core::url($args));
-		exit;
-	}
-
-	//=============================================================================
 	function insert($name)
 	{
-		$name= core::callStackPush(func_get_args(),'module');
-
+		core::$callStack[]= array('type'=>'module','args'=>func_get_args());
 		$file= core::config('model-prefix').$name.core::config('model-suffix');
 		if (file_exists($file))
 		{
@@ -264,14 +196,14 @@ class core
 			core::errorReportToggle();
 		}
 		else core::halt(404,"Template not found '$file'");
- 		core::callStackPop();
+ 		array_pop(core::$callStack);
 		return $result;
 	}
 
 	//=============================================================================
-	function model()
+	function model($name)
 	{
-		$name= core::callStackPush(func_get_args(),'model');
+		core::$callStack[]= array('type'=>'model','args'=>func_get_args());
   		$file= core::config('model-prefix').$name.core::config('model-suffix');
 		if (file_exists($file))
 		{
@@ -280,69 +212,67 @@ class core
 			core::errorReportToggle();
 		}
 		else core::error("Model not found '$file'");
-		core::callStackPop();
+		array_pop(core::$callStack);
 		return $res;
 	}
 
 	//=============================================================================
-	function library($model)
+	function library($name)
 	{
 		static $used= array();
-		if (isset($used[$model])) return;
-		$used[$model]= true;
-		return core::model($model);
+		if (isset($used[$name])) return;
+		$used[$name]= true;
+		return core::model($name);
 	}
 
 	//=============================================================================
-	function errorReportToggle($new=null)
+	function moduleName()
 	{
-		static $stack= array();
-		if ($new)
-		{
-			error_reporting(core::$config['error-reporting-'.$new]);
-			array_push($stack,core::$config['error-reporting-'.$new]); 
-		}
-		else
-		{
-			$new= array_pop($stack);  
-			error_reporting($new);
-		}
+		if (isset(core::$request[core::$config['module-var']])) return core::$request[core::$config['module-var']];
+		return core::$config['default-module'];
+	}
+	
+	//=============================================================================
+	function url()
+	{
+		return call_user_func_array('href::url',func_get_args());
+	}
+	
+	//=============================================================================
+	function urlAdd()
+	{
+		return call_user_func_array('href::urlAdd',func_get_args());
+	}
+
+	//=============================================================================
+	function redirect()
+	{
+		$args= href::processArgs(func_get_args());
+		header('Location: '.core::url($args));
+		exit;
 	}
 
 	//=============================================================================
 	function args($n=0)
 	{
-		if ($n<0) return '';
-		end(core::$callStack);
-		$ptr= key(core::$callStack);
-		if ($n==0) return core::$callStack[$ptr]['args'];
-		elseif (!isset(core::$callStack[$ptr]['args']) || $n > count(core::$callStack[$ptr]['args'])) return '';
-		else return core::$callStack[$ptr]['args'][$n-1];
+		$last= end(core::$callStack);
+		if ($n==0) return $last['args'];
+		elseif (isset($last['args'][$n])) return  $last['args'][$n];
+		return null;
 	}
 
 	//=============================================================================
-	function callStackPush($args,$type)
-	{
-		$modulename= reset($args);
-		core::$callStack[]=array('name'=>$modulename,'args'=>array());
-		end(core::$callStack);
-		$ptr= key(core::$callStack);
-		unset($args[key($args)]);
-		foreach ($args as $val) core::$callStack[$ptr]['args'][]=$val;
-		core::$callStack[]=array('type'=>$type,'name'=>$modulename);
-		return $modulename;
-	}
-
-	//=============================================================================
-	function callStackPop()
+	function vars($name=null,$value=null)
 	{
 		end(core::$callStack);
-		unset(core::$callStack[key(core::$callStack)]);
-		end(core::$callStack);
-		$ptr= key(core::$callStack);
-		core::$callStack[$ptr]['status']= 'close';
-	}
+		$last= key(core::$callStack);
 
+		if (!$name) return core::$callStack[$last]['vars'];
+		if ($value!==null) core::$callStack[$last]['vars'][$name]= $value;
+		if (isset(core::$callStack[$last]['vars'][$name])) return ccore::$callStack[$last]['vars'][$name];
+		return null;
+	}
+	
 	//=============================================================================
 	function prepend($target,$type='(output)',$value=null)
 	{
@@ -399,6 +329,12 @@ class core
 		else core::$prepend[$target][]= $value;
 	}
 
+	//=====================================================
+	function cms()
+	{
+		return isset(core::$request['.cms-admin']);
+	}
+
 	//=============================================================================
 	function error($text,$type=E_USER_NOTICE)
 	{
@@ -409,49 +345,75 @@ class core
 		trigger_error("(by FW core) $text in {$backtrace[0]['file']} on line {$backtrace[0]['line']}. Triggered",$type);
 	}
 
-	//=============================================
-	function halt($code,$text=null)
+	//=============================================================================
+	function filter($value,$rule)
 	{
-		if ($code==301) 
+		if (!isset($rule['default'])) $rule['default']=null;
+		if (isset($rule['range'])) $value= core::filterRange($value,$rule['range'],$rule['default']);
+		elseif (isset($rule['valid'])) 
 		{
-			header('Location: '.$text);
-			$text= null;
+			if (strpos($rule['valid'],'w')!==false) $value= preg_replace('/[^a-zA-Z0-9_-]/','',$value);
+			if (strpos($rule['valid'],'i')!==false) $value= (int)$value;
+			if (strpos($rule['valid'],'h')!==false) $value= htmlspecialchars($value);
+			if (strpos($rule['valid'],'u')!==false) $value= strtoupper($value);
+			if (strpos($rule['valid'],'l')!==false) $value= strtoupper($value);
+			if (strpos($rule['valid'],'t')!==false) $value= trim($value);
+			if (strpos($rule['valid'],'@')!==false) 
+			{
+				$value= trim($value);
+				$value= preg_replace('/[^a-zA-Z0-9@_.\-]/','',$value);
+				$value= strtolower($value);
+			}
 		}
-		elseif ($code==401) 
+		elseif (isset($rule['handler']))
 		{
-			header('WWW-Authenticate: Basic realm="'.$text.'"');
-			$text= null;
+			if (str_word_count($rule['handler'])==1) // function given
+			{
+				if (function_exists($rule['handler'])) $value= call_user_func($rule['handler'],$value);
+				else core::error("Handler function not exists: '{$rule['handler']}'");
+			}
 		}
-		if (!$text)
-		{
-			$texts[301]= 'Moved permanently';
-			$texts[400]= 'Bad request';
-			$texts[401]= 'Authorisation please!';
-			$texts[403]= 'Forbidden';
-			$texts[404]= 'Not exist';
-			$texts[410]= 'Gone';
-			$texts[429]= 'Too Many Requests';
-			$text= 'HTTP/1.0 '.$code.' '.$texts[$code];
-		}
-		header($text,true,$code);
-		die($text);
+		elseif (isset($rule['default'])) $value= $rule['default'];
+		if (isset($rule['size'])) $value= substr($value,0,$rule['size']);
+		return $value;
 	}
 
 	//=============================================================================
-	function url()
+	function filterRange($value,$range,$default)
 	{
-		return call_user_func_array('href::url',func_get_args());
-	}
-	
-	//=============================================================================
-	function urlAdd()
-	{
-		return call_user_func_array('href::urlAdd',func_get_args());
+		if (is_array($range))
+		{
+			if (in_array($value,$range)) return $value;
+			if ($default) return $default;
+			return reset($range);
+		}
+		$list= explode(',',$range);
+		foreach ($list as $sub)
+		{
+			$sub= explode('-',$sub,2);
+			if (count($sub)==1) $sub[1]=$sub[0];
+			if ($sub[0].$sub[1]=='' && $value=='-') return $value;
+			if ($sub[0]=='' && $value<=$sub[1]) return $value;
+			if ($sub[1]=='' && $sub[0]<=$value) return $value;
+			if ($sub[0]<=$value && $value<=$sub[1]) return $value;
+		}
+		return $default;
 	}
 
-	//=====================================================
-	function cms()
+	//=============================================================================
+	function errorReportToggle($new=null)
 	{
-		return isset(core::$request['.cms-admin']);
+		static $stack= array();
+		if ($new)
+		{
+			error_reporting(core::$config['error-reporting-'.$new]);
+			array_push($stack,core::$config['error-reporting-'.$new]); 
+		}
+		else
+		{
+			$new= array_pop($stack);  
+			error_reporting($new);
+		}
 	}
+
 }

@@ -1,7 +1,7 @@
 <? core::prepend('head','title','CMS\'ed page - ConKit test') ?>
 
 <?
-	$c= cms::context() -> label('Edit') -> icon('edit') -> popup(core::url('edit-block','no',1));
+	$c= cms::context() -> label('Edit') -> icon('edit') -> popup(core::url('edit-block','no',1)) -> popuptitle('Edit text block 1');
 	echo cms::anchor($c,'Block 1');
 ?>
 <div>
@@ -25,7 +25,7 @@
 
 <? if(cms::admin()): ?>
 	<?
-		$c= cms::context() -> label('Edit') -> icon('edit') -> popup(core::url('edit-block','no',2));
+		$c= cms::context() -> label('Edit') -> icon('edit') -> popup(core::url('edit-block','no',2)) -> popuptitle('Edit text block 2');
 		echo cms::anchor($c,'Block 2');
 	?>
 	<div>

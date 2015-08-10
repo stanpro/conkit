@@ -3,9 +3,9 @@
 class cmsGui
 {
 	//=============================================================================
-	function create($class)
+	function create($class,$data=null)
 	{
-		return new $class;
+		return new $class($data=null);
 	}
 
 	//=============================================================================
@@ -18,11 +18,7 @@ class cmsGui
 	//=============================================================================
 	function anchor($context,$title=null)
 	{
-		if (is_object($context))
-		{
-			$title= $context->title;
-			$context= $context->context;
-		}
+		if (is_object($context)) $context= $context->context;
 		$n= self::counter(1);
 		$html= '';
 		$html.= '<dfn class="cms-anchor" id="cms-anchor'.$n.'"';
@@ -58,8 +54,8 @@ class cmsGui
 		if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && !core::config('run-devel'))
 		{
     		header('HTTP/1.1 304 Not Modified');
- 			header('Cache-Control: public, max-age=3600');
-   		header('Content-Length: 0');
+ 			header('Cache-Control: public, max-age=600');
+			header('Content-Length: 0');
     		exit;
 		}
 		else
@@ -109,13 +105,6 @@ class cmsContext
 {
 	var $context= array();
 	var $current;
-	var $title;
-
-	//==========================================
-	function __construct($title=null) 
-	{
-		$this->title= $title;
-	}
 
 	//=====================================================
 	function label($value)
@@ -124,7 +113,7 @@ class cmsContext
 		$this->context[]= array();
 		end($this->context);
 		$this->current= key($this->context);
-		$this->context[$this->current]['title']= $value;
+		$this->context[$this->current]['label']= $value;
 		return $this;
 	}
 	
@@ -153,7 +142,6 @@ class cmsGuiForm
 {
 	var $spec;
 	var $specOverall= array(
-		'title'=>'',
 		'method'=>'',
 		'action'=>'',
 		'enctype'=>'',
@@ -199,8 +187,9 @@ class cmsGuiForm
 		if (is_bool($name)) {$escaped= $name; $name= null;}
 		if (!$name) $name= $this->name;
 		if ($this->value) $value= $this->value;
-		elseif (isset(core::$request[$name])) $value= core::$request[$name];
 		elseif (isset($this->specOverall['data'][$name])) $value= $this->specOverall['data'][$name];
+		elseif (isset(core::$request[$name])) $value= core::$request[$name];
+		elseif (isset(core::$registry[$name])) $value= core::$registry[$name];
 		else $value= '';
 		if ($escaped) $value= htmlspecialchars($value);
 		return $value;
@@ -341,7 +330,7 @@ class cmsGuiForm
 			$add= '';
 			if ($this->validation) $add.= ' onSubmit="'.$this->validation.'"';
 			if ($this->enctype) $add.= ' enctype="'.$this->enctype.'"';
-			$pre.= '<form method="'.$this->method.'" action="'.$this->action.'" '.$add.'>';
+			$pre.= '<form id="cms-form" method="'.$this->method.'" action="'.$this->action.'" '.$add.'>';
 			//$pre.= '<div class="error">'.'</div>';
 			$post.= '</form>';
 		}
