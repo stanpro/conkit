@@ -2,13 +2,15 @@
 class sql
 {
 	static $link;
+	static $data;
 	//=========================================================
-	function connect($host, $user, $pass, $db=null)
+	static function connect($host, $user, $pass, $db=null)
 	{
 		self::$link= mysqli_connect($host,$user,$pass,$db);
+		return (boolean)self::$link;
 	}
 	//=========================================================
-	function queryRaw($query)
+	static function queryRaw($query)
 	{
 		$query= self::prepare($query);
 		self::lastQuery($query);
@@ -17,16 +19,15 @@ class sql
 		return $res;
 	}
 	//=========================================================
-	function query($query,$set=null)
+	static function query($query)
 	{
-		if ($set) $query= sql::prepareSet($query,$set);
 		$res= self::queryRaw($query);
 		if (substr($query,0,6)=='INSERT') $res= mysqli_insert_id(self::$link);
 		if (!$res) $res= mysqli_affected_rows(self::$link);
 		return $res;
 	}
 	//=========================================================
-	function getRows($query,$keyCol=null)
+	static function getRows($query,$keyCol=null)
 	{
 		$array= array();
 		$res= self::queryRaw($query);
@@ -44,40 +45,66 @@ class sql
 		return $array;
 	}
 	//=========================================================
-	function getRow($query)
+	static function getRow($query)
 	{
 		$res= self::queryRaw($query.' LIMIT 1', true);
 		$array= mysqli_fetch_assoc($res);
 		return $array;
 	}
 	//=========================================================
-	function getValue($query)
+	static function getValue($query)
 	{
 		$res= self::queryRaw($query, true);
 		$array= mysqli_fetch_row(self::$link);
 		return $array[0];
 	}
 	//=========================================================
-	function prepare($query)
+	static function data()
 	{
-		$query= preg_replace_callback('/(\:\:)([^:]+)(\:\:)(.+?)(\:\:)/ms',
-			function ($matches) {
+		self::$data= func_get_args();
+		if (is_array(self::$data[0]) && key(self::$data[0])===0) self::$data= self::$data[0];
+	}
+	//=========================================================
+	static function prepare($query)
+	{
+		$query= preg_replace_callback('/(\?)([a-z0-9@]*)/ms',
+			function ($matches) 
+			{
+				static $i= 0;
 				$rule= $matches[2];
-				$value= $matches[4];
-				if (preg_match('/([0-9]+)/',$rule,$size)) $size= $size[1]; else $size= null;
-				$value= core::filter($value,array('valid'=>$rule,'size'=>$size));
-				if (strpos($rule,'i')===false) 
+				if (!isset(sql::$data[$i])) return core::error('Undefined data element #'.$i);
+				$value= sql::$data[$i];
+				if (is_array($value))
 				{
-					$value= mysqli_real_escape_string(sql::$link,$value);
-					$value= "'".$value."'";
+				   $list= '';
+				   foreach ($value as $col=>$val)
+				   {
+						$val= mysqli_real_escape_string(sql::$link,$val);
+						$list.= ",`$col`='$val'";
+				   }
+				   $list= substr($list,1);  // remove very first comma
+				   $value= $list;
 				}
+				else
+				{
+					if (strpos($rule,'i')!==false) $value= (int)$value;
+					elseif (strpos($rule,'d')!==false) $value= "'".date("Y-m-d H:i:s", $value)."'";
+					else				 
+					{
+						if (preg_match('/([0-9]+)/',$rule,$size)) $size= $size[1]; else $size= null;
+						$value= core::filter($value,array('valid'=>$rule,'size'=>$size));
+						$value= mysqli_real_escape_string(sql::$link,$value);
+						$value= "'".$value."'";
+					}
+				}
+				$i++;
 				return $value;
 			},
 		$query);
 		return $query;
 	}
 	//=========================================================
-	function prepareSet($query, $set)
+	static function prepareSet($query, $set)
 	{
 	   $set_text= '';
 	   foreach ($set as $col=>$value)
@@ -89,7 +116,7 @@ class sql
 	   return str_replace('::=::',$set_text,$query);
 	}
 	//=========================================================
-	function lastQuery($query=false)
+	static function lastQuery($query=false)
 	{
 		static $last;
 		if ($query) $last= $query;

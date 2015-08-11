@@ -1,16 +1,7 @@
-<?
-	$fore= 'white';
-	$back= 'red';
-	$back2= '#d20000';
-	if (core::req('cms-fcolor')) $fore= core::req('cms-fcolor');
-	if (core::req('cms-bcolor')) $back= core::req('cms-bcolor');
-	if (core::req('cms-bcolor2')) $back2= core::req('cms-bcolor2');
-?>
-
 dfn.cms-anchor,
 div#cms-veil,
 div#cms-context,
-div#cms-popup input
+form#cms-form *
 {
     animation : none;
     animation : none;
@@ -170,8 +161,8 @@ dfn.cms-anchor
 	width: 12px;
 	height: 12px;
 	border-radius: 6px;
-	background-color: <?=$back?>;
-	box-shadow: 0 0 10px <?=$fore?>;
+	background-color: <?=core::req('cms-bcolor')?>;
+	box-shadow: 0 0 10px <?=core::req('cms-fcolor')?>;
 	cursor: pointer;
 }
 dfn.cms-anchor code
@@ -182,7 +173,7 @@ div#cms-veil
 {
 	position: absolute;
 	display: none;
-	background-color: <?=$back?>;
+	background-color: <?=core::req('cms-bcolor')?>;
 	opacity: 0.5;
 	cursor: pointer;
 }
@@ -190,9 +181,9 @@ div#cms-context
 {
 	position: absolute;
 	display: none;
-	background-color: <?=$back?>;
-	color: <?=$fore?>;
-	box-shadow: 0 0 20px <?=$fore?>;
+	background-color: <?=core::req('cms-bcolor')?>;
+	color: <?=core::req('cms-fcolor')?>;
+	box-shadow: 0 0 20px <?=core::req('cms-fcolor')?>;
 }
 div#cms-context h9
 {
@@ -202,7 +193,7 @@ div#cms-context h9
 	font-style: normal;
 	margin: 0;
 	text-align: center;
-	background-color: <?=$back2?>;
+	background-color: <?=core::req('cms-bcolor2')?>;
 	padding: 3px 7px;
 }	
 div#cms-context a, div#cms-context div
@@ -211,9 +202,9 @@ div#cms-context a, div#cms-context div
 	height: 25px;
 	font-size: 13px;
 	line-height: 25px;
-	color: <?=$fore?>;
+	color: <?=core::req('cms-fcolor')?>;
 	text-decoration: none;
-	border-top: solid 1px <?=$fore?>;
+	border-top: solid 1px <?=core::req('cms-fcolor')?>;
 	padding-right: 7px;
 	cursor: pointer;
 }
@@ -226,7 +217,7 @@ div#cms-context i
 	line-height: 25px;
 	font-size: 18px;
 	text-align: center;
-	background-color: <?=$back2?>;
+	background-color: <?=core::req('cms-bcolor2')?>;
 	font-weight: normal;
 }
 div#cms-context svg
@@ -234,7 +225,7 @@ div#cms-context svg
 	width: 17px;
 	height: 17px;
 	padding: 4px;
-	background-color: <?=$back2?>;
+	background-color: <?=core::req('cms-bcolor2')?>;
 	vertical-align: middle;
 }
 div#cms-context span
@@ -248,24 +239,23 @@ div#cms-context span
 div#cms-popup
 {
 	position: absolute;
-	color: <?=$fore?>;
-	background-color: <?=$back?>;
-	box-shadow: 0 0 20px <?=$fore?>;
+	color: <?=core::req('cms-fcolor')?>;
+	background-color: <?=core::req('cms-bcolor')?>;
+	box-shadow: 0 0 20px <?=core::req('cms-fcolor')?>;
 	min-width: 300px;
-	padding-bottom: 10px;
 }
 div#cms-popup marquee
 {
 	display: block;
 	margin: 10px 100px;
-	border: solid thin <?=$fore?>;
+	border: solid thin <?=core::req('cms-fcolor')?>;
 }
 div#cms-popup h3
 {
 	font-size: 16px;
 	line-height: 20px;
-	background-color: <?=$back2?>;
-	color: <?=$fore?>;
+	background-color: <?=core::req('cms-bcolor2')?>;
+	color: <?=core::req('cms-fcolor')?>;
 	text-align: center;
 	padding: 5px 0;
 	margin: 0 0 10px 0;
@@ -286,53 +276,58 @@ div#cms-popup div#cms-popup-content
 {
 	margin: 10px;
 }
-div#cms-popup form#cms-form div
+form#cms-form div
 {
-	margin: 3px 10px 0 10px;
+	margin-top: 3px;
 	text-align: right;
 	white-space: nowrap;
 }
-div#cms-popup form#cms-form label
+form#cms-form label
 {
 	line-height: 25px;
 	text-align: right;
 	margin-right: 10px;
 	vertical-align: top;
 }
-div#cms-popup form#cms-form fieldset label
+form#cms-form fieldset label
 {
 	text-align: left;
 	vertical-align: middle;
 	cursor: default;
 }
-div#cms-popup form#cms-form input, div#cms-popup select, div#cms-popup textarea 
+form#cms-form input[type="text"], 
+form#cms-form select, 
+form#cms-form textarea,
+form#cms-form input[type="password"]
 {
 	width: 300px;
 	height: 23px;
-	border: solid thin <?=$back2?>;
+	border: solid thin <?=core::req('cms-bcolor2')?>;
 	color: black;
-	background-color: <?=$fore?>;
+	background-color: <?=core::req('cms-fcolor')?>;
 	text-align: left;
 	padding: 0 3px;
 	box-sizing: border-box;
 }
-div#cms-popup form#cms-form textarea 
+form#cms-form textarea 
 {
 	height: auto;
 }
-div#cms-popup form#cms-form input[type="submit"], div#cms-popup .cms-button
+form#cms-form input[type="submit"], 
+div#cms-popup .cms-button
 {
 	width: auto;
 	height: 23px;
 	line-height: 23px;
 	padding: 3px 15px;
-	border: solid thin <?=$fore?>;
-	color: <?=$fore?>;
-	background-color: <?=$back2?>;
+	border: solid thin <?=core::req('cms-fcolor')?>;
+	color: <?=core::req('cms-fcolor')?>;
+	background-color: <?=core::req('cms-bcolor2')?>;
 	cursor: pointer;
 	text-decoration: none;
 }
-div#cms-popup form#cms-form input[type="radio"], div#cms-popup form input[type="checkbox"]
+form#cms-form input[type="radio"], 
+form#cms-form input[type="checkbox"]
 {
 	display: inline-block;
 	width: 15px;
@@ -341,12 +336,12 @@ div#cms-popup form#cms-form input[type="radio"], div#cms-popup form input[type="
 	border: 0;
 	vertical-align: middle;	
 }
-div#cms-popup form#cms-form select option 
+form#cms-form select option 
 {
-	color: <?=$fore?>;
-	background-color: <?=$back2?>;
+	color: <?=core::req('cms-fcolor')?>;
+	background-color: <?=core::req('cms-bcolor2')?>;
 }
-div#cms-popup form#cms-form fieldset 
+form#cms-form fieldset 
 {
 	width: 300px;
     display: inline-block;
@@ -354,6 +349,10 @@ div#cms-popup form#cms-form fieldset
     padding: 0;
     border: none;
     text-align: left;
+}
+form#cms-form div.cms-form-static 
+{
+	text-align: center;
 }
 div#cms-popup h4
 {
@@ -364,7 +363,7 @@ div#cms-popup hr
 {
     border: 0;
     height: 1px;
-    background-color: <?=$fore?>;
+    background-color: <?=core::req('cms-fcolor')?>;
 }
 
 .material-icons.md-18 { font-size: 18px; }

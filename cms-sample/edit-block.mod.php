@@ -12,8 +12,8 @@ if (!core::req('cms-form-action'))
 	$f= cms::form();
 	$f-> method('post') -> action(core::urlAdd('cms-form-action','save'));
 	$f-> hidden('no') -> value($no);
-	$f-> input("headline") -> label('Headline') -> value($block[0]);
-	$f-> input("subheadline") -> label('SubHeadline') -> value($block[1]);
+	$f-> text("headline") -> label('Headline') -> value($block[0]);
+	$f-> text("subheadline") -> label('SubHeadline') -> value($block[1]);
 	$f-> textarea("text") -> label('Text') -> value(implode('',array_slice($block,2)));
 	$f-> submit('Save');
 	$f-> display();

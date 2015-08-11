@@ -2,7 +2,7 @@
 class debug
 {
 	//=============================================================================
-	function log()
+	static function log()
 	{
 		if (!core::config('log-file')) return;
 		$args= func_get_args();
@@ -16,7 +16,7 @@ class debug
 	}
 	
 	//=============================================================================
-	function dump($value,$level=0)
+	static function dump($value,$level=0)
 	{
 		static $objects;
 		static $decor= true;

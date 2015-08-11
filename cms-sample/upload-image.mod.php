@@ -9,9 +9,9 @@ if (!core::req('cms-form-action'))
 	$f-> method('post') -> action(core::urlAdd('cms-form-action','upload'));
 	$f-> title('Upload New Image');
 	$f-> file('picture') -> preview('image');
-	$f-> text('remark') -> value('Use only JPG for the sake of test simplicity');
+	$f-> static('Use only jpeg for the sake of test simplicity');
 	$f-> submit('Save');
-	$f ->display(); 
+	$f-> display(); 
 }
 elseif (core::req('cms-form-action')=='upload')
 {

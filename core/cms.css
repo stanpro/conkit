@@ -1,8 +1,7 @@
-
 dfn.cms-anchor,
 div#cms-veil,
 div#cms-context,
-div#cms-popup input
+form#cms-form *
 {
     animation : none;
     animation : none;
@@ -244,7 +243,6 @@ div#cms-popup
 	background-color: red;
 	box-shadow: 0 0 20px white;
 	min-width: 300px;
-	padding-bottom: 10px;
 }
 div#cms-popup marquee
 {
@@ -278,26 +276,29 @@ div#cms-popup div#cms-popup-content
 {
 	margin: 10px;
 }
-div#cms-popup form#cms-form div
+form#cms-form div
 {
-	margin: 3px 10px 0 10px;
+	margin-top: 3px;
 	text-align: right;
 	white-space: nowrap;
 }
-div#cms-popup form#cms-form label
+form#cms-form label
 {
 	line-height: 25px;
 	text-align: right;
 	margin-right: 10px;
 	vertical-align: top;
 }
-div#cms-popup form#cms-form fieldset label
+form#cms-form fieldset label
 {
 	text-align: left;
 	vertical-align: middle;
 	cursor: default;
 }
-div#cms-popup form#cms-form input, div#cms-popup select, div#cms-popup textarea 
+form#cms-form input[type="text"], 
+form#cms-form select, 
+form#cms-form textarea,
+form#cms-form input[type="password"]
 {
 	width: 300px;
 	height: 23px;
@@ -308,11 +309,12 @@ div#cms-popup form#cms-form input, div#cms-popup select, div#cms-popup textarea
 	padding: 0 3px;
 	box-sizing: border-box;
 }
-div#cms-popup form#cms-form textarea 
+form#cms-form textarea 
 {
 	height: auto;
 }
-div#cms-popup form#cms-form input[type="submit"], div#cms-popup .cms-button
+form#cms-form input[type="submit"], 
+div#cms-popup .cms-button
 {
 	width: auto;
 	height: 23px;
@@ -324,7 +326,8 @@ div#cms-popup form#cms-form input[type="submit"], div#cms-popup .cms-button
 	cursor: pointer;
 	text-decoration: none;
 }
-div#cms-popup form#cms-form input[type="radio"], div#cms-popup form input[type="checkbox"]
+form#cms-form input[type="radio"], 
+form#cms-form input[type="checkbox"]
 {
 	display: inline-block;
 	width: 15px;
@@ -333,12 +336,12 @@ div#cms-popup form#cms-form input[type="radio"], div#cms-popup form input[type="
 	border: 0;
 	vertical-align: middle;	
 }
-div#cms-popup form#cms-form select option 
+form#cms-form select option 
 {
 	color: white;
 	background-color: #d20000;
 }
-div#cms-popup form#cms-form fieldset 
+form#cms-form fieldset 
 {
 	width: 300px;
     display: inline-block;
@@ -346,6 +349,10 @@ div#cms-popup form#cms-form fieldset
     padding: 0;
     border: none;
     text-align: left;
+}
+form#cms-form div.cms-form-static 
+{
+	text-align: center;
 }
 div#cms-popup h4
 {

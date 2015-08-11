@@ -6,7 +6,7 @@ class cms
 {
 	//=============================================================================
 	// internal CMS perfomance
-	function perform()
+	static function perform()
 	{
 		if (core::req('cms-oper')=='logout')
 		{
@@ -20,7 +20,7 @@ class cms
 	}
 	
 	//=============================================================================
-	function login()
+	static function login()
 	{
 		core::reg('run-naked',true);
 		if (isset($_SERVER['PHP_AUTH_USER']) && $_SERVER['PHP_AUTH_USER']."\n".$_SERVER['PHP_AUTH_PW']==core::req('.cms-expired'))
@@ -58,7 +58,7 @@ class cms
 	}
 	
 	//=============================================================================
-	function loginCheck($user,$pass)
+	static function loginCheck($user,$pass)
 	{
 		$users= core::config('cms-users');
 		if (!isset($users[$user])) return false;
@@ -72,35 +72,27 @@ class cms
 	
 	//=============================================================================
 	// outputs URL to the login page
-	function loginUrl($oper='login')
+	static function loginUrl($oper='login')
 	{
 		return href::urlAdd('cms-oper',$oper,'cms-request',urlencode($_SERVER['REQUEST_URI']));
 	}
-/*	
-	//=============================================================================
-	function request()
-	{
-		if (isset(config::$items['cms-request'])) $request= config::$items['cms-request'];
-		else $request= urlencode($_SERVER['REQUEST_URI']);
-		return $request;
-	}
-*/
+
 	//=====================================================
-	function anchorGlobal($controls=false)
+	static function anchorGlobal($controls=false)
 	{
 		if (!cms::admin()) return '';
 		return cmsGui::anchorGlobal($controls,cms::admin());
 	}
 	
 	//=====================================================
-	function anchor($controls,$title=null)
+	static function anchor($controls,$title=null)
 	{
 		if (!cms::admin()) return '';
 		return cmsGui::anchor($controls,$title);
 	}
 
 	//=====================================================
-	function admin($arg=null)
+	static function admin($arg=null)
 	{
 		if (!core::req('.cms-admin')) return false;
 		elseif ($arg) return core::req('.cms-'.$arg);
@@ -108,13 +100,13 @@ class cms
 	}
 	
 	//=====================================================
-	function form($data=null)
+	static function form($data=null)
 	{
 		return cmsGui::create('cmsGuiForm',$data);
 	}
 	
 	//=====================================================
-	function context()
+	static function context()
 	{
 		if (!core::req('.cms-admin')) return new cmsDummy();
 		return cmsGui::create('cmsContext');

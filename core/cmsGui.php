@@ -54,7 +54,7 @@ class cmsGui
 		if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && !core::config('run-devel'))
 		{
     		header('HTTP/1.1 304 Not Modified');
- 			header('Cache-Control: public, max-age=600');
+ 			header('Cache-Control: public, max-age=3600');
 			header('Content-Length: 0');
     		exit;
 		}
@@ -62,7 +62,7 @@ class cmsGui
 		{
 			if ($file=='cms.css')
 			{
-				if (core::config('run-devel') && filemtime(CORE.'cms.php.css')>filemtime(CORE.'cms.css'))
+				if (core::config('run-devel') && filemtime(CORE.'cms.css.php')>filemtime(CORE.'cms.css'))
 				{
 					self::generateCss('core','quiet');
 				}
@@ -84,7 +84,7 @@ class cmsGui
 	{
 		core::reg('run-naked', true);
 		ob_start();
-		include(CORE.'cms.php.css');
+		include(CORE.'cms.css.php');
 		$buffer= ob_get_contents();
 		ob_end_clean();
 		if ($target=='core') $file= CORE.'cms.css';
@@ -168,7 +168,7 @@ class cmsGuiForm
 	{
 		if (count($value)==1) $value= $value[0];
 		if (array_key_exists($name, $this->specOverall)) $this->specOverall[$name]= $value;
-		elseif (strpos('-|input|password|select|hidden|radios|checkbox|textarea|text|',"|$name|")) $this->newItem($name,$value);
+		elseif (strpos('-|text|password|select|hidden|radios|checkbox|textarea|static|section|',"|$name|")) $this->newItem($name,$value);
 		else $this->spec[$this->current][$name]= $value;
 		return $this;
 	}
@@ -201,6 +201,11 @@ class cmsGuiForm
 		$this->spec[]= array('type'=>$type,'name'=>$name);
 		end($this->spec);
 		$this->current= key($this->spec);
+		if ($type=='static')
+		{
+			$this->spec[$this->current]['value']= $name;
+			$this->spec[$this->current]['name']= null;
+		}
 		return $this;
 	}
 	//==========================================
@@ -229,30 +234,31 @@ class cmsGuiForm
 		static $uid=0;
 		if (!$this->spec) return '';
 		$pre= $html= $post= '';
-		$names= array(); 
+		$names= array();
 		foreach ($this->spec as $this->current=>$item)
 		{
 			$uid++;
-			$row= $this->type!='hidden' && $this->type!='collapse';
+			$row= $this->type!='hidden' && $this->type!='collapse' && $this->type!='section';
+			$label= $this->type!='static';
+			if ($this->name && !$this->omit) $names[]= $this->name;
 			$html.= "\n";
-			if ($this->name && $this->type!='text' && !$this->omit) $names[]= $this->name;
 			if ($row)
 			{
 				$html.= "\n";
-				if ($this->type=='text' && $this->class) $addClass= ' '.$this->class;
-				else $addClass= '';
-				if ($this->type=='separator') $html.= '<hr>';
-				else $html.= '<div class="'.$addClass.'">';
-				if ($this->preview)
+				$html.= '<div>';
+				if ($label)
 				{
-					$html.= '<label>'.$this->label.'<i class="material-icons md-24" id="cms-form-peview-'.$uid.'">'.$this->preview.'</i></label>';
+					if ($this->preview)
+					{
+						$html.= '<label>'.$this->label.'<i class="material-icons md-24" id="cms-form-peview-'.$uid.'">'.$this->preview.'</i></label>';
+					}
+					else $html.= '<label>'.$this->label.'</label>';
 				}
-				else $html.= '<label>'.$this->label.'</label>';
 			}
-			if ($this->type=='text') 
+			if ($this->type=='section') $html.= '<hr>';
+			elseif ($this->type=='static') 
 			{
-				if (!isset($this->value)) $this->value= $this->currentValue();
-				$html.= $this->value;
+				$html.= '<div class="cms-form-static">'.$this->value.'</div>';
 			}
 			elseif ($this->type=='textarea')
 			{
@@ -323,10 +329,8 @@ class cmsGuiForm
 		if ($names)
 		{
 			$html.= '<input type="hidden" name="cms-form-names" value="'.implode(',',$names).'" />';
-			list($submitButton,$submitValue)= explode('|',$this->submit);
-			if (!$submitValue) $submitValue= $submitButton;
 			$html.= '<input type="hidden" name="cms-form-oper" value="'.$submitValue.'">';
-			$html.= '<h4><input type="submit" value="'.$submitButton.'" /></h4>';
+			$html.= '<h4><input type="submit" value="'.$this->submit.'" /></h4>';
 			$add= '';
 			if ($this->validation) $add.= ' onSubmit="'.$this->validation.'"';
 			if ($this->enctype) $add.= ' enctype="'.$this->enctype.'"';
