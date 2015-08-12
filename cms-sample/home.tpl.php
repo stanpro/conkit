@@ -5,8 +5,8 @@
 	echo cms::anchor($c,'Block 1');
 ?>
 <div>
-	<h1><?=core::reg('headline1')?></h1>
-	<h2><?=core::reg('subheadline1')?></h2>
+	<h1><?=core::vars('headline1')?></h1>
+	<h2><?=core::vars('subheadline1')?></h2>
 	
 	<?
 		$c= cms::context();
@@ -20,7 +20,7 @@
 			<img src="sample.jpg" style="max-width:400px; margin-left:2em;">
 		<? endif ?>
 	</div>
-	<?=core::reg('text1')?>
+	<?=core::vars('text1')?>
 </div>
 
 <? if(cms::admin()): ?>
@@ -29,8 +29,8 @@
 		echo cms::anchor($c,'Block 2');
 	?>
 	<div>
-			<h1><?=core::reg('headline2')?></h1>
-			<h2><?=core::reg('subheadline2')?></h2>
-			<?=core::reg('text2')?>
+			<h1><?=core::vars('headline2')?></h1>
+			<h2><?=core::vars('subheadline2')?></h2>
+			<?=core::vars('text2')?>
 	</div>
 <? endif ?>

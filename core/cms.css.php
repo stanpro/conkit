@@ -1,6 +1,7 @@
 dfn.cms-anchor,
 div#cms-veil,
 div#cms-context,
+div#cms-popup,
 form#cms-form *
 {
     animation : none;
@@ -78,8 +79,7 @@ form#cms-form *
     /*display : inline;*/
     empty-cells : show;
     float : none;
-    font : normal;
-	font-family : Arial,Helv,Helvetica;
+	/*font-family : Arial,Helv,Helvetica;*/
     font-size : medium;
     font-style : normal;
     font-variant : normal;
@@ -161,8 +161,8 @@ dfn.cms-anchor
 	width: 12px;
 	height: 12px;
 	border-radius: 6px;
-	background-color: <?=core::req('cms-bcolor')?>;
-	box-shadow: 0 0 10px <?=core::req('cms-fcolor')?>;
+	background-color: <?=core::config('cms-bcolor')?>;
+	box-shadow: 0 0 10px <?=core::config('cms-fcolor')?>;
 	cursor: pointer;
 }
 dfn.cms-anchor code
@@ -173,7 +173,7 @@ div#cms-veil
 {
 	position: absolute;
 	display: none;
-	background-color: <?=core::req('cms-bcolor')?>;
+	background-color: <?=core::config('cms-bcolor')?>;
 	opacity: 0.5;
 	cursor: pointer;
 }
@@ -181,9 +181,9 @@ div#cms-context
 {
 	position: absolute;
 	display: none;
-	background-color: <?=core::req('cms-bcolor')?>;
-	color: <?=core::req('cms-fcolor')?>;
-	box-shadow: 0 0 20px <?=core::req('cms-fcolor')?>;
+	background-color: <?=core::config('cms-bcolor')?>;
+	color: <?=core::config('cms-fcolor')?>;
+	box-shadow: 0 0 20px <?=core::config('cms-fcolor')?>;
 }
 div#cms-context h9
 {
@@ -193,7 +193,7 @@ div#cms-context h9
 	font-style: normal;
 	margin: 0;
 	text-align: center;
-	background-color: <?=core::req('cms-bcolor2')?>;
+	background-color: <?=core::config('cms-bcolor2')?>;
 	padding: 3px 7px;
 }	
 div#cms-context a, div#cms-context div
@@ -202,9 +202,9 @@ div#cms-context a, div#cms-context div
 	height: 25px;
 	font-size: 13px;
 	line-height: 25px;
-	color: <?=core::req('cms-fcolor')?>;
+	color: <?=core::config('cms-fcolor')?>;
 	text-decoration: none;
-	border-top: solid 1px <?=core::req('cms-fcolor')?>;
+	border-top: solid 1px <?=core::config('cms-fcolor')?>;
 	padding-right: 7px;
 	cursor: pointer;
 }
@@ -217,7 +217,7 @@ div#cms-context i
 	line-height: 25px;
 	font-size: 18px;
 	text-align: center;
-	background-color: <?=core::req('cms-bcolor2')?>;
+	background-color: <?=core::config('cms-bcolor2')?>;
 	font-weight: normal;
 }
 div#cms-context svg
@@ -225,7 +225,7 @@ div#cms-context svg
 	width: 17px;
 	height: 17px;
 	padding: 4px;
-	background-color: <?=core::req('cms-bcolor2')?>;
+	background-color: <?=core::config('cms-bcolor2')?>;
 	vertical-align: middle;
 }
 div#cms-context span
@@ -239,23 +239,23 @@ div#cms-context span
 div#cms-popup
 {
 	position: absolute;
-	color: <?=core::req('cms-fcolor')?>;
-	background-color: <?=core::req('cms-bcolor')?>;
-	box-shadow: 0 0 20px <?=core::req('cms-fcolor')?>;
+	color: <?=core::config('cms-fcolor')?>;
+	background-color: <?=core::config('cms-bcolor')?>;
+	box-shadow: 0 0 20px <?=core::config('cms-fcolor')?>;
 	min-width: 300px;
 }
 div#cms-popup marquee
 {
 	display: block;
 	margin: 10px 100px;
-	border: solid thin <?=core::req('cms-fcolor')?>;
+	border: solid thin <?=core::config('cms-fcolor')?>;
 }
 div#cms-popup h3
 {
 	font-size: 16px;
 	line-height: 20px;
-	background-color: <?=core::req('cms-bcolor2')?>;
-	color: <?=core::req('cms-fcolor')?>;
+	background-color: <?=core::config('cms-bcolor2')?>;
+	color: <?=core::config('cms-fcolor')?>;
 	text-align: center;
 	padding: 5px 0;
 	margin: 0 0 10px 0;
@@ -298,13 +298,14 @@ form#cms-form fieldset label
 form#cms-form input[type="text"], 
 form#cms-form select, 
 form#cms-form textarea,
-form#cms-form input[type="password"]
+form#cms-form input[type="password"],
+form#cms-form input[type="file"]
 {
 	width: 300px;
 	height: 23px;
-	border: solid thin <?=core::req('cms-bcolor2')?>;
+	border: solid thin <?=core::config('cms-bcolor2')?>;
 	color: black;
-	background-color: <?=core::req('cms-fcolor')?>;
+	background-color: <?=core::config('cms-fcolor')?>;
 	text-align: left;
 	padding: 0 3px;
 	box-sizing: border-box;
@@ -320,9 +321,9 @@ div#cms-popup .cms-button
 	height: 23px;
 	line-height: 23px;
 	padding: 3px 15px;
-	border: solid thin <?=core::req('cms-fcolor')?>;
-	color: <?=core::req('cms-fcolor')?>;
-	background-color: <?=core::req('cms-bcolor2')?>;
+	border: solid thin <?=core::config('cms-fcolor')?>;
+	color: <?=core::config('cms-fcolor')?>;
+	background-color: <?=core::config('cms-bcolor2')?>;
 	cursor: pointer;
 	text-decoration: none;
 }
@@ -338,12 +339,13 @@ form#cms-form input[type="checkbox"]
 }
 form#cms-form select option 
 {
-	color: <?=core::req('cms-fcolor')?>;
-	background-color: <?=core::req('cms-bcolor2')?>;
+	color: <?=core::config('cms-fcolor')?>;
+	background-color: <?=core::config('cms-bcolor2')?>;
 }
 form#cms-form fieldset 
 {
 	width: 300px;
+	min-height: 23px;
     display: inline-block;
     margin: 0;
     padding: 0;
@@ -363,7 +365,7 @@ div#cms-popup hr
 {
     border: 0;
     height: 1px;
-    background-color: <?=core::req('cms-fcolor')?>;
+    background-color: <?=core::config('cms-fcolor')?>;
 }
 
 .material-icons.md-18 { font-size: 18px; }

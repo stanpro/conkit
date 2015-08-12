@@ -158,15 +158,15 @@ function cms_file_preview(Input,Target)
 		var Reader= new FileReader();
 		Reader.onload= function (e) 
 		{
-			$('#'+Target).replaceWith('<img src="'+e.target.result+'" style="width:70px;" id="'+Target+'">');
+			$('#'+Target).replaceWith('<img src="'+e.target.result+'" style="width:70px;vertical-align:middle;" id="'+Target+'">');
 		}
 		Reader.readAsDataURL(Input.files[0]);
 	}
 }
 
-function cms_checkbox_adapt(Element,Check,Uncheck)
+function cms_checkbox_adapt(Element,Check)
 {
 	var Value= $(Element).prop('checked');
-	Value= (Value?Check:Uncheck);
+	Value= (Value?Check:'');
 	$(Element).prev().val(Value);
 }

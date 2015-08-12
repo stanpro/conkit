@@ -34,7 +34,7 @@ class href
 	//=============================================================================
 	function urlAdd()
 	{
-		$current= core::$requestUrl;
+		$current= core::$reqUrl;
 		$pairs= self::chain2pairs(func_get_args());
 		$pairs= array_merge($current,$pairs);
 		return self::url(core::moduleName(),$pairs);
@@ -62,7 +62,7 @@ class href
 		{
 			foreach (core::$config['required-vars'] as $name=>$data)
 			{
-				if (!isset($args['request'][$name])) $args['request'][$name]= core::$request[$name];
+				if (!isset($args['request'][$name])) $args['request'][$name]= core::$req[$name];
 				if ($args['request'][$name]==$data['ommit']) unset($args['request'][$name]);
 			}
 		}

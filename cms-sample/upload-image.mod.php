@@ -7,7 +7,6 @@ if (!core::req('cms-form-action'))
 {
 	$f= cms::form();
 	$f-> method('post') -> action(core::urlAdd('cms-form-action','upload'));
-	$f-> title('Upload New Image');
 	$f-> file('picture') -> preview('image');
 	$f-> static('Use only jpeg for the sake of test simplicity');
 	$f-> submit('Save');

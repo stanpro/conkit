@@ -5,16 +5,16 @@ include(__DIR__.'/config.php');
 function __autoload($name) 
 {
 	if (in_array($name,array('href','debug','sql','cms','cmsGui'),true)) include(__DIR__.'/'.$name.'.php');
-	else core::library(core::config('class-sprefix').$name.core::config('class-suffix'));
+	else core::library($name.core::config('class-model'));
 }
 
 //=======================================================
 class core
 {
 	static $config= array();
-	static $request= array();
-	static $requestUrl= array();
-	static $registry= array();
+	static $req= array();
+	static $reqUrl= array();
+	static $reg= array();
 	static $callStack= array();
 	static $prepend= array();
 	
@@ -23,23 +23,23 @@ class core
 	{
 		error_reporting(core::$config['error-reporting-lo']);
 
-		foreach ($_COOKIE as $var=>$val) core::$request[$var]= $val;
+		foreach ($_COOKIE as $var=>$val) core::$req[$var]= $val;
 		if (isset(core::$config['cookie-vars'])) foreach (core::$config['cookie-vars'] as $var=>$config)
 		{
-			core::$request[$var]= core::filter(core::req($var),$config);
+			core::$req[$var]= core::filter(core::req($var),$config);
 		}
 
-		foreach ($_GET as $var=>$val) core::$request[$var]= core::$requestUrl[$var]= $val;
-		unset(core::$requestUrl[core::config('module-var')]);
-		foreach ($_POST as $var=>$val) core::$request[$var]= $val;
+		foreach ($_GET as $var=>$val) if ($var!==session_name()) core::$req[$var]= core::$reqUrl[$var]= $val;
+		unset(core::$reqUrl[core::config('module-var')]);
+		foreach ($_POST as $var=>$val) if ($var!==session_name()) core::$req[$var]= $val;
 		foreach ($_FILES as $var=>$val)
 		{
-			if (is_string($val['name'])) core::$request[$var]= $val;  // <input type=file name=xxx ...>
+			if (is_string($val['name'])) core::$req[$var]= $val;  // <input type=file name=xxx ...>
 			else  // <input type=file name=xxx[yyy] ...>
 			{
 				foreach ($val['name'] as $key=>$void)
 				{
-		 			core::$request[$var][$key]= array(
+		 			core::$req[$var][$key]= array(
 						'name'=>$val['name'][$key],
 						'type'=>$val['type'][$key],
 						'tmp_name'=>$val['tmp_name'][$key],
@@ -52,22 +52,22 @@ class core
 
 		if (isset(core::$config['cookie-vars'])) foreach (core::$config['cookie-vars'] as $name=>$config) 
 		{
-			if (isset(core::$request[$name]))
+			if (isset(core::$req[$name]))
 			{
-				core::$request[$name]= core::filter(core::$request[$name], $config);
-				if (!isset($_COOKIE[$name]) || $_COOKIE[$name]!=core::$request[$name])
+				core::$req[$name]= core::filter(core::$req[$name], $config);
+				if (!isset($_COOKIE[$name]) || $_COOKIE[$name]!=core::$req[$name])
 				{
-					setcookie($name, core::$request[$name], $config['expire']);
+					setcookie($name, core::$req[$name], $config['expire']);
 				}
-				unset(core::$requestUrl[$name]);
+				unset(core::$reqUrl[$name]);
 			}
 		}
 		
 		// apply required vars
 		if (isset(core::$config['required'])) foreach (core::$config['required'] as $name=>$config)
 		{
-			core::$request[$name]=  core::filter(core::$request[$name],$comfig);
-			core::$requestUrl[$name]= core::$request[$name];
+			core::$req[$name]=  core::filter(core::$req[$name],$comfig);
+			core::$reqUrl[$name]= core::$req[$name];
 		}
 		
 		if (!core::moduleName())
@@ -75,24 +75,24 @@ class core
 			if (is_array(core::$config['default-module']))
 			{
 				$args= href::processArgs(core::$config['default-module']);
-				core::$request[core::$config['module-var']]= $args['template'];
+				core::$req[core::$config['module-var']]= $args['template'];
 				array_merge(core::$reques,$args['req']);
 			}
 		}
-		core::$request[core::$config['module-var']]= str_replace('..','(dot)(dot)',core::moduleName()); //secure upper directories
-		core::$request[core::$config['module-var']]= str_replace("\0",'(0)',core::moduleName()); //secure
-		core::$request[core::$config['module-var']]= str_replace('<','(lt)',core::moduleName()); //secure
-		core::$request[core::$config['module-var']]= str_replace('>','(gt)',core::moduleName()); //secure
+		core::$req[core::$config['module-var']]= str_replace('..','(dot)(dot)',core::moduleName()); //secure upper directories
+		core::$req[core::$config['module-var']]= str_replace("\0",'(0)',core::moduleName()); //secure
+		core::$req[core::$config['module-var']]= str_replace('<','(lt)',core::moduleName()); //secure
+		core::$req[core::$config['module-var']]= str_replace('>','(gt)',core::moduleName()); //secure
 
 		// set session var
 		if (core::req(session_name()) || isset(core::$config['session-vars']))
 		{
 			if (!session_id()) session_start();
-			foreach ($_SESSION as $name=>$val) core::$request[$name]= $val;
+			foreach ($_SESSION as $name=>$val) core::$req[$name]= $val;
 			if (isset(core::$config['session-vars'])) foreach (core::$config['session-vars'] as $name=>$config)
 			{
-				core::$request[$name]= core::filter(core::req($name),$config);
-				unset(core::$requestUrl[$name]);
+				core::$req[$name]= core::filter(core::req($name),$config);
+				unset(core::$reqUrl[$name]);
 			}
 		}
 
@@ -124,7 +124,7 @@ class core
 	}	
 
 	//=============================================================================
-	static function config($name,$value=null)
+	static function config($name=null,$value=null)
 	{
 		if (!$name) return core::$config;
 		$stored= (isset(self::$config[$name]) ? self::$config[$name] : null);
@@ -135,11 +135,11 @@ class core
 	//=============================================================================
 	static function req($name=null,$value=null,$store=null,$expire=null)
 	{
-		if (!$name) return core::$request;
+		if (!$name) return core::$req;
 		if ($store=='session') return self::reqSession($name,$value);
 		if ($store=='cookie') return self::reqCookie($name,$value,$expire);
-		if ($value!==null) core::$request[$name]= $value;
-		if (isset(core::$request[$name])) return core::$request[$name];
+		if ($value!==null) core::$req[$name]= $value;
+		if (isset(core::$req[$name])) return core::$req[$name];
 		else return null;
 	}
 	
@@ -148,7 +148,7 @@ class core
 	{
 		if (!session_id()) session_start();
 		$_SESSION[$name]= $value;
-		core::$request[$name]= $value;
+		core::$req[$name]= $value;
 		return $value;
 	}
 	
@@ -160,17 +160,17 @@ class core
 			if (preg_match('/^\d{4}-d{2}-d{2}/',$expire)) $expire= strtotime($expire);
 			elseif ($expire<1000000000) $expire+= time();
 		}
-		setcookie($name, $value, $expire);
-		core::$request[$name]= $value;
+		setcookie($name, $value, $expire,'/');
+		core::$req[$name]= $value;
 		return $value;
 	}
 	
 	//=============================================================================
 	static function reg($name=null,$value=null)
 	{
-		if (!$name) return core::$registry;
-		if ($value!==null) core::$registry[$name]= $value;
-		if (isset(core::$registry[$name])) return core::$registry[$name];
+		if (!$name) return core::$reg;
+		if ($value!==null) core::$reg[$name]= $value;
+		if (isset(core::$reg[$name])) return core::$reg[$name];
 		else return null;
 	}
 	
@@ -228,7 +228,7 @@ class core
 	//=============================================================================
 	static function moduleName()
 	{
-		if (isset(core::$request[core::$config['module-var']])) return core::$request[core::$config['module-var']];
+		if (isset(core::$req[core::$config['module-var']])) return core::$req[core::$config['module-var']];
 		return core::$config['default-module'];
 	}
 	
@@ -268,7 +268,7 @@ class core
 
 		if (!$name) return core::$callStack[$last]['vars'];
 		if ($value!==null) core::$callStack[$last]['vars'][$name]= $value;
-		if (isset(core::$callStack[$last]['vars'][$name])) return ccore::$callStack[$last]['vars'][$name];
+		if (isset(core::$callStack[$last]['vars'][$name])) return core::$callStack[$last]['vars'][$name];
 		return null;
 	}
 	
@@ -277,7 +277,7 @@ class core
 	{
 		if ($type=='(output)')
 		{
-			if (core::req('.cms-admin')) core::prepend('head','cms');
+			if (core::cms()) core::prepend('head','cms');
 			$html= "\n";
 			if (isset(core::$prepend[$target])) foreach (core::$prepend[$target] as $value) $html.= $value."\n";
 			unset(core::$prepend[$target]);
@@ -331,7 +331,7 @@ class core
 	//=====================================================
 	static function cms()
 	{
-		return isset(core::$request['.cms-admin']);
+		return isset(core::$req['.cms-admin']);
 	}
 
 	//=============================================================================
@@ -373,7 +373,7 @@ class core
 			$texts[304]= 'Not Modified';
 			$texts[307]= 'Temporary Redirect';
 			$texts[400]= 'Bad request';
-			$texts[401]= 'Authorisation please!';
+			$texts[401]= 'Unauthorized';
 			$texts[403]= 'Forbidden';
 			$texts[404]= 'Not exist';
 			$texts[410]= 'Gone';

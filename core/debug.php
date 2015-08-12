@@ -33,7 +33,7 @@ class debug
 			$trans["\n"]='&crarr;';
 			$trans["\r"]='&larrb;';
 			$trans["\0"]='&empty;';
-			return strtr(htmlspecialchars($value),$trans);
+			return '<span style="display:inline-block;max-width:500px;overflow:scroll;overflow:auto;vertical-align:top;">'.strtr(htmlspecialchars($value),$trans).'</span>';
 		}
 		if ($level==0)
 		{
@@ -80,4 +80,54 @@ class debug
 		if ($level==0) echo '</pre>';
 	}
 
+	//=============================================================================
+	static function globals()
+	{
+		$ch= function($channel) 
+		{
+			if ($channel=='_COOKIE') $data= $_COOKIE;
+			elseif ($channel=='_GET') $data= $_GET;
+			elseif ($channel=='_COOKIE') $data= $_COOKIE;
+			elseif ($channel=='_POST') $data= $_POST;
+			elseif ($channel=='_SESSION') $data= $_SESSION;
+			echo '<tr><th colspan="3">$'.$channel.'</th></tr>';
+			if ($data)
+			{
+				foreach ($data as $name=>$value)
+				{
+					echo "<tr><td>$name</td><td>";
+					debug::dump($value);
+					echo '</td><td align="center">';
+					if (!isset(core::$req[$name])) echo '&cross;';
+					elseif ($channel=='_FILE') echo '&check;';
+					elseif (core::$req[$name]==$value) echo '&check;';
+					else echo '&ne;';
+					echo '</td></tr>';
+				}
+			}
+		};
+
+		echo '<table border="1">';
+		echo '<tr><th>Name</th><th>Value</th><th>core::req</th></tr>';
+		echo $ch('_COOKIE');
+		echo $ch('_GET');
+		echo $ch('_POST');
+		echo $ch('_FILES');
+		echo $ch('_SESSION');
+		echo '<tr><th colspan="3">core::req()</th></tr>';
+		foreach (core::$req as $name=>$value)
+		{
+			echo "<tr><td>$name</td><td>";
+			debug::dump($value);
+			echo '</td><td></td></tr>';
+		}
+		echo '<tr><th colspan="3">core::reg()</th></tr>';
+		foreach (core::$reg as $name=>$value)
+		{
+			echo "<tr><td>$name</td><td>";
+			debug::dump($value);
+			echo '</td><td></td></tr>';
+		}
+		echo '</table>';
+	}	
 }

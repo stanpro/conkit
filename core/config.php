@@ -1,15 +1,20 @@
 <?
 core::config('error-reporting-lo', E_ALL);
 core::config('error-reporting-hi', E_ALL & ~E_NOTICE & ~E_STRICT);
+core::config('module-var','module');
+core::config('default-module','home');
+core::config('pre-module','head');
+core::config('post-module','foot');
 core::config('template-prefix','');
 core::config('template-suffix','.tpl.php');
 core::config('model-prefix','');
 core::config('model-suffix','.mod.php');
+core::config('class-model','-class');
 //core::config('log-file','../conkit.log');
-core::config('cms-realm','Phella 2 CMS Kit');
+core::config('cms-realm','ConKit CMS');
 core::config('cms-css','?core-module=cms-resource&file=cms.css');
 core::config('cms-js','?core-module=cms-resource&file=cms.js');
 core::config('jquery','https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js');
-core::req('cms-fcolor','white');
-core::req('cms-bcolor','red');
-core::req('cms-bcolor2','#d20000');
+core::config('cms-fcolor','white');
+core::config('cms-bcolor','red');
+core::config('cms-bcolor2','#d20000');

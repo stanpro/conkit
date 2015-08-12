@@ -10,51 +10,48 @@ class cms
 	{
 		if (core::req('cms-oper')=='logout')
 		{
-			unset($_SESSION['.cms-admin']);
-			unset($_SESSION['.cms-attr']);
-			if (isset($_SERVER['PHP_AUTH_USER'])) core::reqSession('.cms-expired',$_SERVER['PHP_AUTH_USER']."\n".$_SERVER['PHP_AUTH_PW']);
-			core::halt(301,urldecode(core::req('cms-request')));
+			if (isset($_SESSION)) unset($_SESSION['.cms-admin']);
+			if (!isset($_SESSION) || count($_SESSION)==0) setcookie(session_name(),'',0,'/'); 
+			setcookie('conkit_cms_exp',core::$req['.cms-admin']['name'],0,'/'); 
+			core::halt(303,urldecode(core::req('cms-request')));
 		}
 		elseif (core::req('cms-oper')=='login') cms::login();
-		elseif (core::req('cms-oper')=='reset') session_destroy();
 	}
 	
 	//=============================================================================
 	static function login()
 	{
 		core::reg('run-naked',true);
-		if (isset($_SERVER['PHP_AUTH_USER']) && $_SERVER['PHP_AUTH_USER']."\n".$_SERVER['PHP_AUTH_PW']==core::req('.cms-expired'))
-		{
-			unset($_SERVER['PHP_AUTH_USER']);
-			core::reqSession('.cms-expired','');
-		}
-		if (!isset($_SERVER['PHP_AUTH_USER']))
+		
+		$send401= function() 
 		{
 			$realm= core::config('cms-realm');
 			if (!$realm)
 			{
 				$realm= strtolower($_SERVER['HTTP_HOST']);
 				if (substr($realm,0,4)=='www.') $realm= substr($realm,4);
-				$realm= 'phella@'.$realm;
+				$realm= 'ConKit@'.$realm;
 			}
 			core::halt(401,$realm);
-		}
-		else
+		};
+
+		if (!isset($_SERVER['PHP_AUTH_USER'])) $send401();
+	
+		$exp= (isset($_COOKIE['conkit_cms_exp']) ? $_COOKIE['conkit_cms_exp'] : null);
+		if ($_SERVER['PHP_AUTH_USER']===$exp) 
 		{
-			$loginHandler= core::config('cms-user-handler');
-			if (!$loginHandler) $loginHandler= 'cms::loginCheck';
-			if ($attr=call_user_func($loginHandler,$_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']))
-			{
-				core::reqSession('.cms-admin',$_SERVER['PHP_AUTH_USER']);
-				core::reqSession('.cms-attr',$attr);
-				core::reqSession('.cms-expired','');
-				if (!headers_sent()) core::halt(301,urldecode(core::req('cms-request')));
-				//debug::dump(core::$request);
-				//debug::dump($_SESSION);
-			}
-			core::reqSession('.cms-expired',$_SERVER['PHP_AUTH_USER']."\n".$_SERVER['PHP_AUTH_PW']);
-			core::halt(403,'Wrong username/password. Press "Back".');
+			setcookie('conkit_cms_exp','',0,'/');
+			$send401();
 		}
+
+		$loginHandler= core::config('cms-user-handler');
+		if (!$loginHandler) $loginHandler= 'cms::loginCheck';
+		if (call_user_func($loginHandler,$_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']))
+		{
+			core::reqSession('.cms-admin', array_merge(array('name'=>$_SERVER['PHP_AUTH_USER']),core::$config['cms-users'][$_SERVER['PHP_AUTH_USER']]));
+			core::halt(303,urldecode(core::req('cms-request')));
+		}
+		else $send401();
 	}
 	
 	//=============================================================================
@@ -95,8 +92,8 @@ class cms
 	static function admin($arg=null)
 	{
 		if (!core::req('.cms-admin')) return false;
-		elseif ($arg) return core::req('.cms-'.$arg);
-		else return core::req('.cms-admin');
+		elseif ($arg) return core::$req['.cms-admin'][$arg];
+		else return core::$req['.cms-admin']['name'];
 	}
 	
 	//=====================================================

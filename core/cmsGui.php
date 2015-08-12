@@ -188,8 +188,8 @@ class cmsGuiForm
 		if (!$name) $name= $this->name;
 		if ($this->value) $value= $this->value;
 		elseif (isset($this->specOverall['data'][$name])) $value= $this->specOverall['data'][$name];
-		elseif (isset(core::$request[$name])) $value= core::$request[$name];
-		elseif (isset(core::$registry[$name])) $value= core::$registry[$name];
+		elseif (isset(core::$req[$name])) $value= core::$req[$name];
+		elseif (isset(core::$reg[$name])) $value= core::$reg[$name];
 		else $value= '';
 		if ($escaped) $value= htmlspecialchars($value);
 		return $value;
@@ -240,7 +240,7 @@ class cmsGuiForm
 			$uid++;
 			$row= $this->type!='hidden' && $this->type!='collapse' && $this->type!='section';
 			$label= $this->type!='static';
-			if ($this->name && !$this->omit) $names[]= $this->name;
+			if ($this->name && !$this->omit) $names[$this->name]= $this->name;
 			$html.= "\n";
 			if ($row)
 			{
@@ -250,7 +250,7 @@ class cmsGuiForm
 				{
 					if ($this->preview)
 					{
-						$html.= '<label>'.$this->label.'<i class="material-icons md-24" id="cms-form-peview-'.$uid.'">'.$this->preview.'</i></label>';
+						$html.= '<label><i class="material-icons md-18" id="cms-form-peview-'.$uid.'">'.$this->preview.'</i></label>';
 					}
 					else $html.= '<label>'.$this->label.'</label>';
 				}
@@ -282,21 +282,29 @@ class cmsGuiForm
 			elseif ($this->type=='radios')
 			{
 				$html.= '<fieldset title="value='.$this->currentValue().'">';
-				foreach ($this->options as $key=>$val)
+				foreach ($this->options as $value=>$val)
 				{
-					$html.= '<input type="radio" name="'.$this->name.'" value="'.$key.'" id="cms-radios-'.$this->name.'-'.$key.'"';
-					if ($key==$this->currentValue()) $html.= ' checked';
-					$html.= ' /><label for="cms-radios-'.$this->name.'-'.$key.'">'.$val.'</label> ';
+					$html.= '<input type="radio" name="'.$this->name.'" value="'.$value.'" id="cms-radios-'.$this->name.'-'.$key.'"';
+					if ($value==$this->currentValue()) $html.= ' checked';
+					$html.= ' /><label for="cms-radios-'.$this->name.'-'.$value.'">'.$val.'</label> ';
+					if (!$this->singleline) $html.= '<br/>';
 				}
 				$html.= '</fieldset>';
 			}
 			elseif ($this->type=='checkbox')
 			{
-				$html.= '<fieldset title="value='.$this->currentValue().'">';
-				$html.= '<input type="hidden" name="'.$this->name.'" value="'.$this->currentValue().'">';
-				$html.= '<input type="checkbox" '.$this->add.' onchange="cms_checkbox_adapt(this,\''.$this->check.'\',\''.$this->uncheck.'\')"';
-				if ($this->check==$this->currentValue()) $html.= ' checked';
-				$html.= ' />&nbsp;';
+				if (!$this->checks) $this->checks= array($this->name => '');
+				$html.= '<fieldset>';
+				foreach ($this->checks as $name=>$label)
+				{
+					$names[$name]= $name;
+					if (!$this->check) $this->check= 1;
+					$html.= '<input type="hidden" name="'.$name.'" value="'.$this->currentValue($name).'">';
+					$html.= '<input type="checkbox" onchange="cms_checkbox_adapt(this,\''.$this->check.'\')"';
+					if ($this->currentValue($name)) $html.= ' checked';
+					$html.= ' /> <label>'.$label.'</label>';
+					if (!$this->singleline) $html.= '<br/>';
+				}
 				$html.= '</fieldset>';
 			}
 			elseif ($this->type=='separator')

@@ -1,6 +1,7 @@
 dfn.cms-anchor,
 div#cms-veil,
 div#cms-context,
+div#cms-popup,
 form#cms-form *
 {
     animation : none;
@@ -78,8 +79,7 @@ form#cms-form *
     /*display : inline;*/
     empty-cells : show;
     float : none;
-    font : normal;
-	font-family : Arial,Helv,Helvetica;
+	/*font-family : Arial,Helv,Helvetica;*/
     font-size : medium;
     font-style : normal;
     font-variant : normal;
@@ -298,7 +298,8 @@ form#cms-form fieldset label
 form#cms-form input[type="text"], 
 form#cms-form select, 
 form#cms-form textarea,
-form#cms-form input[type="password"]
+form#cms-form input[type="password"],
+form#cms-form input[type="file"]
 {
 	width: 300px;
 	height: 23px;
@@ -344,6 +345,7 @@ form#cms-form select option
 form#cms-form fieldset 
 {
 	width: 300px;
+	min-height: 23px;
     display: inline-block;
     margin: 0;
     padding: 0;
