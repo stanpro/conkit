@@ -7,7 +7,7 @@ ConKit is a PHP framework and CSM construction kit.
 * Lightweight framework with minimum overhead
 * Simple no-nonsense MVC approach
 * Easy to start using
-* Single installation may use several websites
+* Single installation may serve several websites
 * Optional CMS construction module 
 
 ## CMS construction kit
