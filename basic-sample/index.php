@@ -9,8 +9,6 @@ include(CORE.'core.php');
 ////// It override FW-wide settings in core/config.php
 ////// Custom configuration can be added here also
 
-core::config('class-prefix','');
-core::config('class-suffix','.class');
 
 ////// Launch the action
 core::start();

@@ -101,6 +101,15 @@ class cms
 	{
 		return cmsGui::create('cmsGuiForm',$data);
 	}
+
+	//==========================================
+	static function formData() 
+	{
+		$names= explode(',',core::req('cms-form-names'));
+		$data= array();
+		foreach ($names as $name) $data[$name]= core::req($name);
+		return $data;
+	}
 	
 	//=====================================================
 	static function context()

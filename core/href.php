@@ -2,7 +2,7 @@
 class href
 {
 	//=============================================================================
-	function url()
+	static function url()
 	{
 		$args= href::processArgs(func_get_args());
 
@@ -32,7 +32,7 @@ class href
 	}
 
 	//=============================================================================
-	function urlAdd()
+	static function urlAdd()
 	{
 		$current= core::$reqUrl;
 		$pairs= self::chain2pairs(func_get_args());
@@ -41,7 +41,7 @@ class href
 	}
 	
 	//=============================================================================
-	function processArgs($args)
+	static function processArgs($args)
 	{
 		if (is_array($args[0])) return $args[0]; // already processed
 		$args_processed= array('module'=>core::moduleName(),'request'=>array());
@@ -56,7 +56,7 @@ class href
 	}
 
 	//=============================================================================
-	function required($args) // add up required vars
+	static function required($args) // add up required vars
 	{
  		if (isset(core::$config['required-vars']) && !core::reg('ignore-required-vars'))
 		{
@@ -77,7 +77,7 @@ class href
 	}
 
 	//=============================================================================
-	function chain2pairs($args)
+	static function chain2pairs($args)
 	{
 		if (is_array(reset($args))) return reset($args);
 		$pairs= array();

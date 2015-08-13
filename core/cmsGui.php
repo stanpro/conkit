@@ -3,20 +3,20 @@
 class cmsGui
 {
 	//=============================================================================
-	function create($class,$data=null)
+	static function create($class,$data=null)
 	{
 		return new $class($data=null);
 	}
 
 	//=============================================================================
-	function counter($inc=0)
+	static function counter($inc=0)
 	{
 		static $n=1; $n+=$inc;
 		return $n;
 	}
 
 	//=============================================================================
-	function anchor($context,$title=null)
+	static function anchor($context,$title=null)
 	{
 		if (is_object($context)) $context= $context->context;
 		$n= self::counter(1);
@@ -30,7 +30,7 @@ class cmsGui
 	}
 
 	//=============================================================================
-	function anchorGlobal($context)
+	static function anchorGlobal($context)
 	{
 		if (is_object($context))
 		{
@@ -47,7 +47,7 @@ class cmsGui
 	}
 
 	//=============================================================================
-	function forward($file)
+	static function forward($file)
 	{
 		core::reg('run-naked', true);
 		if ($file!='cms.css' && $file!='cms.js') core::halt(403);
@@ -80,7 +80,7 @@ class cmsGui
 	}
 
 	//=============================================================================
-	function generateCss($target='',$mode='')
+	static function generateCss($target='',$mode='')
 	{
 		core::reg('run-naked', true);
 		ob_start();
@@ -145,28 +145,30 @@ class cmsGuiForm
 		'method'=>'',
 		'action'=>'',
 		'enctype'=>'',
-		'data'=>'',
+		'values'=>'',
 		'submit'=>'',
 		'validation'=>'',
 	);
 	var $current;
 	
 	//==========================================
-	function __construct($data=null) 
+	function __construct($values=null) 
 	{
-		$this->specOverall['data']= $data;
+		$this->specOverall['values']= $values;
 	}
 
 	//==========================================
-	function create($data=null) 
+	function create($values=null) 
 	{
-		return new self($data);
+		return new self($values);
 	}
 
 	//==========================================
 	function __call($name,$value) 
 	{
-		if (count($value)==1) $value= $value[0];
+		if (count($value)==0) $value= true; 
+		else $value= $value[0];
+		
 		if (array_key_exists($name, $this->specOverall)) $this->specOverall[$name]= $value;
 		elseif (strpos('-|text|password|select|hidden|radios|checkbox|textarea|static|section|',"|$name|")) $this->newItem($name,$value);
 		else $this->spec[$this->current][$name]= $value;
@@ -187,7 +189,7 @@ class cmsGuiForm
 		if (is_bool($name)) {$escaped= $name; $name= null;}
 		if (!$name) $name= $this->name;
 		if ($this->value) $value= $this->value;
-		elseif (isset($this->specOverall['data'][$name])) $value= $this->specOverall['data'][$name];
+		elseif (isset($this->specOverall['values'][$name])) $value= $this->specOverall['values'][$name];
 		elseif (isset(core::$req[$name])) $value= core::$req[$name];
 		elseif (isset(core::$reg[$name])) $value= core::$reg[$name];
 		else $value= '';
@@ -282,11 +284,11 @@ class cmsGuiForm
 			elseif ($this->type=='radios')
 			{
 				$html.= '<fieldset title="value='.$this->currentValue().'">';
-				foreach ($this->options as $value=>$val)
+				foreach ($this->options as $value=>$label)
 				{
 					$html.= '<input type="radio" name="'.$this->name.'" value="'.$value.'" id="cms-radios-'.$this->name.'-'.$key.'"';
 					if ($value==$this->currentValue()) $html.= ' checked';
-					$html.= ' /><label for="cms-radios-'.$this->name.'-'.$value.'">'.$val.'</label> ';
+					$html.= ' /><label for="cms-radios-'.$this->name.'-'.$value.'">'.$label.'</label> ';
 					if (!$this->singleline) $html.= '<br/>';
 				}
 				$html.= '</fieldset>';
@@ -315,7 +317,7 @@ class cmsGuiForm
 			elseif ($this->type=='file')
 			{
 				$html.= '<input type="'.$this->type.'" '.$this->add;
-				$html.= ' name="'.$this->name.'"'.$this->html;;
+				$html.= ' name="'.$this->name.'"';
 				if ($this->preview) $html.= ' onChange="cms_file_preview(this,\'cms-form-peview-'.$uid.'\')"';
 				if ($this->class) $html.= ' class="'.$this->class.'"';
 				$html.= '>';
@@ -323,7 +325,7 @@ class cmsGuiForm
 			else 
 			{
 				$html.= '<input type="'.$this->type.'" '.$this->add;
-				$html.= ' name="'.$this->name.'" value="'.$this->currentValue(true).'" '.$this->html;
+				$html.= ' name="'.$this->name.'" value="'.$this->currentValue(true).'"';
 				if ($this->class) $html.= ' class="'.$this->class.'"';
 				$html.= '>';
 			}
@@ -369,12 +371,4 @@ class cmsGuiForm
 		return $html;
 	}
 
-	//==========================================
-	function submittedData() 
-	{
-		$names= explode(',',core::req('cms-form-names'));
-		$data= array();
-		foreach ($names as $name) $data[$name]= core::req($name);
-		return $data;
-	}
 }

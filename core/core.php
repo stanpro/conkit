@@ -177,7 +177,7 @@ class core
 	//=============================================================================
 	static function insert($name)
 	{
-		core::$callStack[]= array('type'=>'module','args'=>func_get_args());
+		core::$callStack[]= array('type'=>'module','args'=>func_get_args(),'vars'=>array());
 		$file= core::config('model-prefix').$name.core::config('model-suffix');
 		if (file_exists($file))
 		{
@@ -203,7 +203,7 @@ class core
 	//=============================================================================
 	static function model($name)
 	{
-		core::$callStack[]= array('type'=>'model','args'=>func_get_args());
+		core::$callStack[]= array('type'=>'model','args'=>func_get_args(),'vars'=>array());
   		$file= core::config('model-prefix').$name.core::config('model-suffix');
 		if (file_exists($file))
 		{
