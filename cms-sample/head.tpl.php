@@ -9,7 +9,6 @@
 			$c= cms::context();
 			$c-> label('Test if  data files writable') -> icon('offline_pin') -> popup(core::url('test-files'));
 			$c-> label('To ConKit project page') -> icon('cloud') -> url("https://github.com/stanpro/conkit");
-			$c-> label('Logout') -> icon('lock') -> url(cms::loginUrl('logout'));
 			echo cms::anchorGlobal($c);
 		?>
 		<fieldset>

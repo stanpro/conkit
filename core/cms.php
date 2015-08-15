@@ -13,7 +13,7 @@ class cms
 			if (isset($_SESSION)) unset($_SESSION['.cms-admin']);
 			if (!isset($_SESSION) || count($_SESSION)==0) setcookie(session_name(),'',0,'/'); 
 			setcookie('conkit_cms_exp',core::$req['.cms-admin']['name'],0,'/'); 
-			core::halt(303,urldecode(core::req('cms-request')));
+			core::halt(302,urldecode(core::req('cms-request')));
 		}
 		elseif (core::req('cms-oper')=='login') cms::login();
 	}
@@ -23,25 +23,21 @@ class cms
 	{
 		core::reg('run-naked',true);
 		
-		$send401= function() 
+		$realm= core::config('cms-realm');
+		if (!$realm)
 		{
-			$realm= core::config('cms-realm');
-			if (!$realm)
-			{
-				$realm= strtolower($_SERVER['HTTP_HOST']);
-				if (substr($realm,0,4)=='www.') $realm= substr($realm,4);
-				$realm= 'ConKit@'.$realm;
-			}
-			core::halt(401,$realm);
-		};
+			$realm= strtolower($_SERVER['HTTP_HOST']);
+			if (substr($realm,0,4)=='www.') $realm= substr($realm,4);
+			$realm= 'ConKit@'.$realm;
+		}
 
-		if (!isset($_SERVER['PHP_AUTH_USER'])) $send401();
+		if (!isset($_SERVER['PHP_AUTH_USER'])) core::halt(401,$realm);
 	
 		$exp= (isset($_COOKIE['conkit_cms_exp']) ? $_COOKIE['conkit_cms_exp'] : null);
 		if ($_SERVER['PHP_AUTH_USER']===$exp) 
 		{
 			setcookie('conkit_cms_exp','',0,'/');
-			$send401();
+			core::halt(401,$realm);
 		}
 
 		$loginHandler= core::config('cms-user-handler');
@@ -49,9 +45,9 @@ class cms
 		if (call_user_func($loginHandler,$_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']))
 		{
 			core::reqSession('.cms-admin', array_merge(array('name'=>$_SERVER['PHP_AUTH_USER']),core::$config['cms-users'][$_SERVER['PHP_AUTH_USER']]));
-			core::halt(303,urldecode(core::req('cms-request')));
+			core::halt(302,urldecode(core::req('cms-request')));
 		}
-		else $send401();
+		else core::halt(401,$realm);
 	}
 	
 	//=============================================================================

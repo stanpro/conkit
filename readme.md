@@ -1,6 +1,6 @@
-# ConKit
+﻿# ConKit
 
-ConKit is a PHP framework and CSM construction kit.
+ConKit is a PHP framework and CMS construction kit.
 
 ## Main features of ConKit
 

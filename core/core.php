@@ -98,7 +98,6 @@ class core
 
 		if (core::req('cms-oper')) cms::perform();
 		elseif (core::req('core-module')=='cms-resource') cmsGui::forward(core::req('file'));
-		elseif (core::req('core-module')=='cms-css') cmsGui::generateCss(core::req('target'));
 
 		ob_start();
 		if (isset(core::$config['pre-models'])) foreach(core::$config['pre-models'] as $model) core::model($model);
@@ -293,8 +292,8 @@ class core
 		elseif ($type==='cms')
 		{
 			core::prepend('head','jquery');
-			core::prepend('head','css',core::config('cms-css'));
-			core::prepend('head','js',core::config('cms-js'));
+			core::prepend('head','css','?core-module=cms-resource&file=cms.css');
+			core::prepend('head','js','?core-module=cms-resource&file=cms.js');
 			core::prepend('head','css','https://fonts.googleapis.com/icon?family=Material+Icons');
 			return;
 		}

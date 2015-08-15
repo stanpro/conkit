@@ -37,6 +37,8 @@ class cmsGui
 			$title= cms::admin();
 			$context= $context->context;
 		}
+		$context[]= array('label'=>'Logout', 'icon'=>'lock', 'url'=>cms::loginUrl('logout'));
+
 		$html= '';
 		$html.= '<dfn class="cms-anchor" id="cms-anchor-global"';
 		if ($title) $html.= ' title="'.$title.'"';
@@ -60,25 +62,33 @@ class cmsGui
 		}
 		else
 		{
-			if ($file=='cms.css')
+			if ($file=='cms.js')
 			{
-				if (core::config('run-devel') && filemtime(CORE.'cms.css.php')>filemtime(CORE.'cms.css'))
-				{
-					self::generateCss('core','quiet');
-				}
-				$type= 'text/css';
+				header('Content-Type: text/javascript');
+				header('Cache-Control: public, max-age=3600');
+				header('Content-Length: '.filesize(CORE.$file));
+				header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime(CORE.$file)).' GMT');
+				header('Pragma: public');
+				readfile(CORE.$file);
 			}
-			elseif ($file=='cms.js') $type= 'text/javascript';
-			header('Content-Type: '.$type);
-			header('Cache-Control: public, max-age=3600');
-			header('Content-Length: '.filesize(CORE.$file));
-			header('Last-Modified: '.gmdate('D, d M Y H:i:s', filemtime(CORE.$file)).' GMT');
-			header('Pragma: public');
-			readfile(CORE.$file);
+			elseif ($file=='cms.css')
+			{
+				$setcolor= function($color)
+				{
+					return str_pad(core::config('cms-'.$color ),24);
+				};
+				header('Content-Type: text/css');
+				header('Cache-Control: public, max-age=3600');
+				header('Content-Length: '.filesize(CORE.$file.'.php'));
+				header('Last-Modified: '.gmdate('D, d M Y H:i:s', time()).' GMT');
+				header('Pragma: public');
+				include(CORE.$file.'.php');
+			}
+			else core::halt(404);
 			exit;
 		}
 	}
-
+/*
 	//=============================================================================
 	static function generateCss($target='',$mode='')
 	{
@@ -96,6 +106,7 @@ class cmsGui
 		}
 		else core::halt(403,"File $file is not writable");
 	}
+*/
 }
 
 
