@@ -40,11 +40,16 @@ class cms
 			core::halt(401,$realm);
 		}
 
-		$loginHandler= core::config('cms-user-handler');
-		if (!$loginHandler) $loginHandler= 'cms::loginCheck';
-		if (call_user_func($loginHandler,$_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']))
+		$loginHandler= core::config('cms-user-check');
+		if (!$loginHandler) $res= cms::loginCheck($_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']);
+		else $res= call_user_func($loginHandler,$_SERVER['PHP_AUTH_USER'],$_SERVER['PHP_AUTH_PW']);
+		
+		if ($res!==false)
 		{
-			core::reqSession('.cms-admin', array_merge(array('name'=>$_SERVER['PHP_AUTH_USER']),core::$config['cms-users'][$_SERVER['PHP_AUTH_USER']]));
+			if (!$loginHandler) $res= core::reqSession('.cms-admin', array_merge(array('name'=>$_SERVER['PHP_AUTH_USER']),core::$config['cms-users'][$_SERVER['PHP_AUTH_USER']]));
+			elseif (is_array($res)) $res= array_merge(array('name'=>$_SERVER['PHP_AUTH_USER'],'password'=>$_SERVER['PHP_AUTH_PW']),$res);
+			else $res= array('name'=>$_SERVER['PHP_AUTH_USER'],'password'=>$_SERVER['PHP_AUTH_PW'],'attr'=>$res);
+			core::reqSession('.cms-admin', $res);
 			core::halt(302,urldecode(core::req('cms-request')));
 		}
 		else core::halt(401,$realm);
@@ -64,7 +69,6 @@ class cms
 	}
 	
 	//=============================================================================
-	// outputs URL to the login page
 	static function loginUrl($oper='login')
 	{
 		return href::urlAdd('cms-oper',$oper,'cms-request',urlencode($_SERVER['REQUEST_URI']));

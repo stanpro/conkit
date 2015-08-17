@@ -234,20 +234,19 @@ class core
 	//=============================================================================
 	static function url()
 	{
-		return call_user_func_array('href::url',func_get_args());
+		return href::url(func_get_args());
 	}
 	
 	//=============================================================================
 	static function urlAdd()
 	{
-		return call_user_func_array('href::urlAdd',func_get_args());
+		return href::urlAdd(func_get_args());
 	}
 
 	//=============================================================================
 	static function redirect()
 	{
-		$args= href::processArgs(func_get_args());
-		core::halt(303, core::url($args));
+		core::halt(303, core::url(func_get_args()));
 	}
 
 	//=============================================================================

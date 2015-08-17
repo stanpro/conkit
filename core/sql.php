@@ -12,7 +12,7 @@ class sql
 	//=========================================================
 	static function queryRaw($query)
 	{
-		$query= self::prepare($query);
+		if (sql::$data) $query= self::prepare($query);
 		self::lastQuery($query);
 		$res= mysqli_query(self::$link,$query);
 		if ($res===false) core::error('MySQL Query failed');
@@ -101,6 +101,7 @@ class sql
 				return $value;
 			},
 		$query);
+		sql::$data= null;
 		return $query;
 	}
 	//=========================================================

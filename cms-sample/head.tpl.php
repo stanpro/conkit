@@ -14,7 +14,7 @@
 		<fieldset>
 			<legend>Header (see head.tpl.php)</legend>
 			<div>
-				<img src="logo.png" style="width:200px; vertical-align:middle; margin-right:2em;">
+				<img src="logo.png" style="width:100px; vertical-align:middle; margin-right:2em; margin-left:3em;">
 				<a href="<?=cms::loginUrl()?>">Login</a>
 			</div>
 		</fieldset>
